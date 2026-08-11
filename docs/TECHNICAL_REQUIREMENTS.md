@@ -28,11 +28,14 @@ The document authorizes neither a specific framework nor production implementati
 - Audio, haptic, animation, and accessibility presentation layers.
 - Privacy-minimized analytics and crash reporting behind build-time configuration.
 - Ad SDK integration (AdMob): persistent top banner on every non-gameplay screen (including pause), plus one interstitial per completed/exited challenge on the way back to a non-gameplay screen, gated behind a consent (GDPR/UMP, App Tracking Transparency) flow. Never shown during active target resolution, never gating the start of a challenge, never on ordinary menu navigation.
+- Firebase Authentication (Google/Apple sign-in) gating access to gameplay, matching the portfolio's account-required access model.
+- Cloud Firestore sync for progress, statistics, and leaderboard scores, with local caching for offline play between sync points.
+- Global leaderboard for endless-mode score, backed by Firestore with server-side-enforced security rules.
 - Store purchase integration for the single ad-removal entitlement.
 
 ### Excluded from MVP
 
-- Required backend, account system, cloud synchronization, multiplayer, live leaderboards, user-generated content, or remote level editor.
+- Multiplayer, user-generated content, or remote level editor.
 - Arbitrary-width integers, real processor emulation, programmable instruction sequences, or executable user code.
 
 ## 3. Core simulation
@@ -111,7 +114,7 @@ The client shall separate:
 4. Input translation.
 5. Rendering, animation, audio, and haptics.
 6. Persistence and migrations.
-7. Platform services, purchases, advertising, analytics, and crash reporting.
+7. Platform services, purchases, advertising, authentication, cloud sync, analytics, and crash reporting.
 
 The simulation must be runnable in headless unit tests. Platform integrations must be hidden behind interfaces so test builds can use deterministic fakes.
 
@@ -134,10 +137,14 @@ The simulation must be runnable in headless unit tests. Platform integrations mu
 | SRA-TR-013 | Purchase failure, cancellation, pending status, restore, and offline entitlement states shall be handled without losing progression.                  | SRA-BR-007             |
 | SRA-TR-014 | Builds shall expose content and ruleset versions in diagnostics without exposing secrets or personal data.                                            | SRA-BR-004, SRA-BR-012 |
 | SRA-TR-015 | The ad layer shall be hidden behind an interface with a deterministic fake for tests, shall load consent state before any ad request, shall suppress all ad units when the ad-removal entitlement is active, and shall enforce a minimum interval between interstitials so accidental extra calls cannot spam ads.                     | SRA-BR-007, SRA-BR-015 |
+| SRA-TR-016 | Gameplay shall be gated behind Google/Apple sign-in via Firebase Auth; unauthenticated users shall see only the sign-in flow. | SRA-BR-006 |
+| SRA-TR-017 | Progress and leaderboard scores shall sync to Cloud Firestore under user-scoped security rules, with rate-limited score submission and offline-cached local fallback. | SRA-BR-016 |
 
 ## 8. Persistence
 
 Local persistence shall include content progress, best scores, tutorial state, settings, aggregate statistics, purchased-entitlement cache, and the most recent interrupted run if restoration is supported.
+
+Progress, statistics, and leaderboard scores sync to Cloud Firestore under a `users/{userId}/` document (`profile`, `gameState`, `achievements`) plus a `leaderboards/global/scores/{scoreId}` collection (`userId`, `playerName`, `score`, `timestamp`), matching Modulo Squares' schema. Firestore security rules shall enforce user-scoped read/write access and rate-limit score submissions. Local caching keeps the game playable offline between sync points; sync conflicts resolve by keeping the higher score / latest progress rather than silently overwriting.
 
 The game shall never silently reset progress after a schema change. Corrupt data handling must retain a recoverable backup where feasible, start from safe defaults, and present an understandable recovery message.
 
@@ -152,6 +159,8 @@ The minimum event catalog should include:
 - Endless run start/end and score band.
 - Purchase screen viewed and platform purchase outcome if applicable.
 - Ad impression and click events (aggregate SDK-reported events only, no custom cross-app tracking).
+- Sign-in method and outcome (Google/Apple).
+- Leaderboard view and submission events.
 - Accessibility setting enabled.
 
 Analytics must be disableable by distribution or consent policy. Gameplay must not depend on successful event delivery.
@@ -165,6 +174,7 @@ Analytics must be disableable by distribution or consent policy. Gameplay must n
 - Replay determinism tests across supported platforms.
 - Integration tests for pause, resume, interruption, save migration, purchase restore, and offline launch.
 - Ad-layer tests: consent flow, ad load failure/fallback, and entitlement-based ad suppression using the deterministic fake.
+- Integration tests for sign-in flow, Firestore sync (including conflict resolution), and leaderboard submission/rate-limiting.
 - Accessibility tests for screen readers, switch/tap-only input, reduced motion, contrast, and audio-disabled play.
 - Device tests across a documented low-, mid-, and high-performance matrix for iOS and Android.
 
@@ -181,3 +191,4 @@ Production release requires:
 - Privacy disclosures reconciled with the final SDK and telemetry behavior.
 - Store purchase and restore flows verified with store-distributed test builds for the ad-removal entitlement.
 - Ad content and placement reviewed against Google Play and Apple App Store ad policies, with consent flow verified for GDPR/UMP and App Tracking Transparency.
+- Firestore security rules reviewed and tested (user-scoped access, score-submission rate limiting).
