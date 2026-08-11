@@ -102,7 +102,7 @@ Daily challenges, online leaderboards, social sharing, additional bit widths, si
 | SRA-BR-012 | Product analytics shall measure comprehension and retention without requiring personally identifying information.                 | Should   | Approved event catalog and privacy review                           |
 | SRA-BR-013 | Core information shall remain understandable without color or audio.                                                              | Must     | Accessibility review and test evidence                              |
 | SRA-BR-014 | Store materials shall describe the game as entertainment first and shall not claim guaranteed educational outcomes.               | Must     | Store-listing review                                                |
-| SRA-BR-015 | Free players shall see a persistent banner ad and interstitial ads between challenges, never during active target resolution.     | Must     | Ad-placement review and playtest evidence                           |
+| SRA-BR-015 | Free players shall see a persistent banner ad on every non-gameplay screen, including the pause overlay, and one interstitial ad when a challenge ends and the player returns to a non-gameplay screen. Ads shall never appear during active target resolution, shall never gate the start of a challenge, and shall never fire on ordinary menu navigation. | Must | Ad-placement review and playtest evidence |
 
 ## 8. Progression and content strategy
 
@@ -119,7 +119,7 @@ Each challenge should introduce or combine one idea. Repetition should come from
 
 The game follows the portfolio's standard financial model, matching Modulo Squares: free-to-play with advertising, plus a one-time purchase that removes all ads.
 
-- **Free tier:** the complete game, supported by a persistent banner ad (top of screen) and interstitial ads shown between challenges. Ads are never shown during active target resolution.
+- **Free tier:** the complete game, supported by a persistent banner ad (top of screen) on every non-gameplay screen — menu, chapter/challenge select, settings, results, and the pause overlay — plus one interstitial ad when a challenge ends and the player returns to a non-gameplay screen. Ads never appear during active target resolution, never gate the start of a challenge, and never fire on ordinary menu navigation.
 - **Ad removal:** a single one-time in-app purchase disables all ads permanently. This is the only purchase in the MVP.
 - **Never monetized:** operations, undo, accessibility features, or any competitive advantage. No consumable currencies or energy timers.
 - Cosmetic themes or future content packs may be considered post-launch but are not part of the MVP and are never required to enjoy the free ad-supported experience.

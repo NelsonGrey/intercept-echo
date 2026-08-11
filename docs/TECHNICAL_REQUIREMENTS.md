@@ -27,7 +27,7 @@ The document authorizes neither a specific framework nor production implementati
 - Local settings, save data, and aggregate statistics.
 - Audio, haptic, animation, and accessibility presentation layers.
 - Privacy-minimized analytics and crash reporting behind build-time configuration.
-- Ad SDK integration (AdMob): persistent top banner plus interstitials between challenges, gated behind a consent (GDPR/UMP, App Tracking Transparency) flow, never shown during active target resolution.
+- Ad SDK integration (AdMob): persistent top banner on every non-gameplay screen (including pause), plus one interstitial per completed/exited challenge on the way back to a non-gameplay screen, gated behind a consent (GDPR/UMP, App Tracking Transparency) flow. Never shown during active target resolution, never gating the start of a challenge, never on ordinary menu navigation.
 - Store purchase integration for the single ad-removal entitlement.
 
 ### Excluded from MVP
@@ -133,7 +133,7 @@ The simulation must be runnable in headless unit tests. Platform integrations mu
 | SRA-TR-012 | All third-party code and assets shall be recorded with version, source, license, and intended use.                                                    | SRA-BR-009             |
 | SRA-TR-013 | Purchase failure, cancellation, pending status, restore, and offline entitlement states shall be handled without losing progression.                  | SRA-BR-007             |
 | SRA-TR-014 | Builds shall expose content and ruleset versions in diagnostics without exposing secrets or personal data.                                            | SRA-BR-004, SRA-BR-012 |
-| SRA-TR-015 | The ad layer shall be hidden behind an interface with a deterministic fake for tests, shall load consent state before any ad request, and shall suppress all ad units when the ad-removal entitlement is active.                     | SRA-BR-007, SRA-BR-015 |
+| SRA-TR-015 | The ad layer shall be hidden behind an interface with a deterministic fake for tests, shall load consent state before any ad request, shall suppress all ad units when the ad-removal entitlement is active, and shall enforce a minimum interval between interstitials so accidental extra calls cannot spam ads.                     | SRA-BR-007, SRA-BR-015 |
 
 ## 8. Persistence
 
