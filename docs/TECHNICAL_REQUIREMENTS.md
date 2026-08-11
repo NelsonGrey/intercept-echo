@@ -27,7 +27,8 @@ The document authorizes neither a specific framework nor production implementati
 - Local settings, save data, and aggregate statistics.
 - Audio, haptic, animation, and accessibility presentation layers.
 - Privacy-minimized analytics and crash reporting behind build-time configuration.
-- Store purchase integration only if the free-sample model is selected.
+- Ad SDK integration (AdMob): persistent top banner plus interstitials between challenges, gated behind a consent (GDPR/UMP, App Tracking Transparency) flow, never shown during active target resolution.
+- Store purchase integration for the single ad-removal entitlement.
 
 ### Excluded from MVP
 
@@ -110,7 +111,7 @@ The client shall separate:
 4. Input translation.
 5. Rendering, animation, audio, and haptics.
 6. Persistence and migrations.
-7. Platform services, purchases, analytics, and crash reporting.
+7. Platform services, purchases, advertising, analytics, and crash reporting.
 
 The simulation must be runnable in headless unit tests. Platform integrations must be hidden behind interfaces so test builds can use deterministic fakes.
 
@@ -132,6 +133,7 @@ The simulation must be runnable in headless unit tests. Platform integrations mu
 | SRA-TR-012 | All third-party code and assets shall be recorded with version, source, license, and intended use.                                                    | SRA-BR-009             |
 | SRA-TR-013 | Purchase failure, cancellation, pending status, restore, and offline entitlement states shall be handled without losing progression.                  | SRA-BR-007             |
 | SRA-TR-014 | Builds shall expose content and ruleset versions in diagnostics without exposing secrets or personal data.                                            | SRA-BR-004, SRA-BR-012 |
+| SRA-TR-015 | The ad layer shall be hidden behind an interface with a deterministic fake for tests, shall load consent state before any ad request, and shall suppress all ad units when the ad-removal entitlement is active.                     | SRA-BR-007, SRA-BR-015 |
 
 ## 8. Persistence
 
@@ -149,6 +151,7 @@ The minimum event catalog should include:
 - Failure reason category.
 - Endless run start/end and score band.
 - Purchase screen viewed and platform purchase outcome if applicable.
+- Ad impression and click events (aggregate SDK-reported events only, no custom cross-app tracking).
 - Accessibility setting enabled.
 
 Analytics must be disableable by distribution or consent policy. Gameplay must not depend on successful event delivery.
@@ -161,6 +164,7 @@ Analytics must be disableable by distribution or consent policy. Gameplay must n
 - Content validation and reference-solution tests.
 - Replay determinism tests across supported platforms.
 - Integration tests for pause, resume, interruption, save migration, purchase restore, and offline launch.
+- Ad-layer tests: consent flow, ad load failure/fallback, and entitlement-based ad suppression using the deterministic fake.
 - Accessibility tests for screen readers, switch/tap-only input, reduced motion, contrast, and audio-disabled play.
 - Device tests across a documented low-, mid-, and high-performance matrix for iOS and Android.
 
@@ -175,4 +179,5 @@ Production release requires:
 - Performance targets met on baseline devices.
 - Completed dependency and asset-license inventory.
 - Privacy disclosures reconciled with the final SDK and telemetry behavior.
-- Store purchase and restore flows verified with store-distributed test builds when monetization uses an unlock.
+- Store purchase and restore flows verified with store-distributed test builds for the ad-removal entitlement.
+- Ad content and placement reviewed against Google Play and Apple App Store ad policies, with consent flow verified for GDPR/UMP and App Tracking Transparency.

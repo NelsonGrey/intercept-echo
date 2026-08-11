@@ -57,7 +57,7 @@ The game must not require prior knowledge of binary, hexadecimal, programming, o
 - Support sessions of approximately one to five minutes.
 - Provide both authored progression and a replayable score mode.
 - Establish a second recognizable computer-science game in the portfolio.
-- Support an ad-free, one-time-purchase business model.
+- Support the portfolio's standard financial model (matching Modulo Squares): free-to-play with banner and interstitial advertising, plus a one-time purchase that removes all ads.
 
 ### Non-goals for MVP
 
@@ -65,7 +65,7 @@ The game must not require prior knowledge of binary, hexadecimal, programming, o
 - Requiring players to convert between decimal, binary, and hexadecimal.
 - Simulating a real CPU or a specific processor architecture.
 - Multiplayer, user-generated levels, accounts, cloud saves, or global leaderboards.
-- Consumable currencies, energy timers, forced advertising, or pay-to-win assistance.
+- Consumable currencies, energy timers, forced/blocking ad gates (for example, mandatory rewarded video to continue play), or pay-to-win assistance.
 
 ## 6. MVP product scope
 
@@ -93,8 +93,8 @@ Daily challenges, online leaderboards, social sharing, additional bit widths, si
 | SRA-BR-003 | Overflow shall create a meaningful resource or scoring decision and shall not be a cosmetic effect.                               | Must     | Design rules and playtest evidence showing at least two viable uses |
 | SRA-BR-004 | Every failed target shall display the operation history and the visible reason for failure.                                       | Must     | Failure-state acceptance test                                       |
 | SRA-BR-005 | The MVP shall provide at least 40 authored challenges and one replayable endless mode.                                            | Must     | Content inventory and completed release build                       |
-| SRA-BR-006 | Players shall be able to finish the main challenge path without advertisements, social sharing, or an account.                    | Must     | End-to-end offline test                                             |
-| SRA-BR-007 | The commercial model shall be either upfront premium or a meaningful free sample followed by one permanent unlock.                | Must     | Approved pricing and store-product configuration                    |
+| SRA-BR-006 | Players shall be able to finish the main challenge path without a purchase, forced account creation, or social sharing.           | Must     | End-to-end offline test                                             |
+| SRA-BR-007 | The commercial model shall be free-to-play with banner and interstitial advertising, plus a one-time purchase that removes all ads. | Must   | Approved pricing and store-product configuration                    |
 | SRA-BR-008 | The game shall present technical names only after the corresponding operation has been learned visually.                          | Should   | Tutorial/content review                                             |
 | SRA-BR-009 | The visual, audio, UI, code, writing, and level content shall be original or supported by retained license records.               | Must     | Asset provenance register and release audit                         |
 | SRA-BR-010 | The final title and icon shall pass store, web, domain, and trademark clearance before public announcement.                       | Must     | Signed clearance checklist                                          |
@@ -102,6 +102,7 @@ Daily challenges, online leaderboards, social sharing, additional bit widths, si
 | SRA-BR-012 | Product analytics shall measure comprehension and retention without requiring personally identifying information.                 | Should   | Approved event catalog and privacy review                           |
 | SRA-BR-013 | Core information shall remain understandable without color or audio.                                                              | Must     | Accessibility review and test evidence                              |
 | SRA-BR-014 | Store materials shall describe the game as entertainment first and shall not claim guaranteed educational outcomes.               | Must     | Store-listing review                                                |
+| SRA-BR-015 | Free players shall see a persistent banner ad and interstitial ads between challenges, never during active target resolution.     | Must     | Ad-placement review and playtest evidence                           |
 
 ## 8. Progression and content strategy
 
@@ -116,9 +117,14 @@ Each challenge should introduce or combine one idea. Repetition should come from
 
 ## 9. Monetization hypothesis
 
-The preferred hypothesis is a free sample containing onboarding and the first chapter, followed by a single permanent unlock for the complete game. An upfront premium release is the fallback if store-page testing shows that the niche audience prefers a clear paid proposition.
+The game follows the portfolio's standard financial model, matching Modulo Squares: free-to-play with advertising, plus a one-time purchase that removes all ads.
 
-Cosmetic themes may be considered after launch, but the MVP shall not depend on cosmetic revenue. No operation, undo, accessibility feature, or competitive advantage may be sold as a consumable.
+- **Free tier:** the complete game, supported by a persistent banner ad (top of screen) and interstitial ads shown between challenges. Ads are never shown during active target resolution.
+- **Ad removal:** a single one-time in-app purchase disables all ads permanently. This is the only purchase in the MVP.
+- **Never monetized:** operations, undo, accessibility features, or any competitive advantage. No consumable currencies or energy timers.
+- Cosmetic themes or future content packs may be considered post-launch but are not part of the MVP and are never required to enjoy the free ad-supported experience.
+
+Ad presentation must comply with Google Play and Apple App Store policies and applicable consent requirements (GDPR/UMP, App Tracking Transparency) before any regional rollout.
 
 ## 10. Success measures
 
