@@ -24,6 +24,22 @@ Related docs: [Business Requirements](./docs/BUSINESS_REQUIREMENTS.md) ·
 
 Bundle/package ID base: `com.shiftregisterarcade`
 
+## Deliverables
+
+Each game in this portfolio ships three deliverables:
+
+| Deliverable | Platform | Identifier | Status |
+| --- | --- | --- | --- |
+| Android app | Google Play | `com.shiftregisterarcade.app.android` | Firebase-registered; Play Console listing not yet created (see [docs/STORE_SETUP.md](docs/STORE_SETUP.md)) |
+| iOS app | Apple App Store Connect | `com.shiftregisterarcade.app.ios` | Firebase-registered; ASC app record not yet created (see [docs/STORE_SETUP.md](docs/STORE_SETUP.md)) |
+| Website | Firebase Hosting | `shift-register-arcade-{env}.web.app` | **Dev live**; staging/prod configured, not yet deployed |
+
+Website URLs (redeploy with `firebase deploy --only hosting --project <env>`, or run the equivalent Hosting REST API calls if `firebase login` has not been done on this machine):
+
+- Dev: https://shift-register-arcade-dev.web.app &mdash; **live**
+- Staging: https://shift-register-arcade-staging.web.app &mdash; not yet deployed
+- Prod: https://shift-register-arcade-prod.web.app &mdash; not yet deployed
+
 ## Store setup still required manually
 
 Google Play Console and Apple App Store Connect have no public API for
