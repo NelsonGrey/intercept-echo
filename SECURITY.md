@@ -2,13 +2,13 @@
 
 ## Supported Versions
 
-**Shift-Register Arcade** is currently in discovery / pre-release status — see [Business Requirements](./docs/BUSINESS_REQUIREMENTS.md). There is a single active line of development (`main`); no long-term-support branches exist yet.
+**Shift-Register Arcade** is currently in discovery / pre-release status — see [Business Requirements](./docs/BUSINESS_REQUIREMENTS.md). Development flows `develop` → `staging` → `main`; only the code on these three branches is supported, there is no long-term support for older commits.
 
-| Environment | GCP project        | Status                        |
-| ----------- | ------------------- | ------------------------------ |
-| Development | `shift-register-arcade-dev`     | Active                          |
-| Staging     | `shift-register-arcade-staging` | Active                          |
-| Production  | `shift-register-arcade-prod`    | Provisioned, not yet released   |
+| Branch    | Environment | GCP project          | Status                        |
+| --------- | ----------- | --------------------- | ------------------------------ |
+| `develop` | Development | `shift-register-arcade-dev`     | Active, default branch          |
+| `staging` | Staging     | `shift-register-arcade-staging` | Active                           |
+| `main`    | Production  | `shift-register-arcade-prod`    | Provisioned, not yet released    |
 
 ## Reporting a Vulnerability
 
