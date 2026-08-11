@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "default": "shift-register-arcade-dev",
+    "dev": "shift-register-arcade-dev",
+    "staging": "shift-register-arcade-staging",
+    "prod": "shift-register-arcade-prod"
+  }
+}
