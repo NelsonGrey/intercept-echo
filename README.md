@@ -6,6 +6,17 @@ Modulo Squares.
 Related docs: [Business Requirements](./docs/BUSINESS_REQUIREMENTS.md) ·
 [Technical Requirements](./docs/TECHNICAL_REQUIREMENTS.md)
 
+## Status
+
+First playable vertical slice: the register domain engine (`lib/domain/`,
+exhaustively tested over all 256 byte values), 7 hand-authored challenges
+across the Move/Preserve/Transform chapters (`lib/content/` — not the full
+40 SRA-BR-005 calls for yet), and Home/Select/Gameplay/Results screens
+wired to `game-shell`'s ad/consent/entitlement services. Verified both with
+`flutter test` and by actually running on an iOS Simulator with the real
+AdMob service — that live run caught a real crash (see `game-shell`'s
+history) that the fakes-only unit tests couldn't have found.
+
 ## Layout
 
 - `packages/mobile` — Flutter client (iOS + Android). Depends on [game-shell](https://github.com/NelsonGrey/game-shell) for auth, ads, consent, and the ad-removal entitlement — see that repo before reimplementing any of those.
