@@ -165,10 +165,10 @@ packages:
     description:
       path: "."
       ref: main
-      resolved-ref: "7a2f95b70219749264195ebef295c1228b6e92e5"
+      resolved-ref: "47c1fbeec0ffed6a17d5a0aa00494ba865ca3205"
       url: "https://github.com/NelsonGrey/game-shell.git"
     source: git
-    version: "0.1.0"
+    version: "0.3.0"
   google_identity_services_web:
     dependency: transitive
     description:
