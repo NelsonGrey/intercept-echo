@@ -18,12 +18,16 @@ class ResultsScreen extends StatelessWidget {
     required this.challenge,
     required this.won,
     required this.movesUsed,
+    this.timedOut = false,
   });
 
   final AppServices services;
   final Challenge challenge;
   final bool won;
   final int movesUsed;
+
+  /// The round clock ran out (as opposed to the move budget).
+  final bool timedOut;
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +39,9 @@ class ResultsScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                won ? 'Target Matched' : 'Out of Moves',
+                won
+                    ? 'Target Matched'
+                    : (timedOut ? 'Out of Time' : 'Out of Moves'),
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,

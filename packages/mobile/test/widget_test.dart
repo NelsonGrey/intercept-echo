@@ -85,7 +85,7 @@ void main() {
     await tester.pumpWidget(ShiftRegisterArcadeApp(services: services));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Appearance'));
+    await tester.tap(find.text('Settings'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Arcade Neon'));
     await tester.pumpAndSettle();
@@ -117,5 +117,87 @@ void main() {
     SharedPreferences.setMockInitialValues({'gameplay.theme': 'retired'});
     await services.theme.load();
     expect(services.theme.value, defaultGameTheme);
+  });
+
+  group('round clock', () {
+    Future<AppServices> openChallenge(WidgetTester tester, String title) async {
+      final services = fakeServices();
+      await tester.pumpWidget(ShiftRegisterArcadeApp(services: services));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Play'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(title));
+      await tester.pumpAndSettle();
+      return services;
+    }
+
+    // Both Directions is a Move challenge: 8 ticks of 1.5s.
+    const tick = Duration(milliseconds: 1500);
+
+    testWidgets('a clocked round fails as Out of Time after 8 ticks',
+        (tester) async {
+      final services = await openChallenge(tester, 'Both Directions');
+
+      await tester.pump(tick * 7);
+      expect(find.text('Out of Time'), findsNothing);
+
+      await tester.pump(tick);
+      await tester.pumpAndSettle();
+      expect(find.text('Out of Time'), findsOneWidget);
+      expect((services.ads as FakeAdService).interstitialShownCount, 1);
+    });
+
+    testWidgets('pausing stops the clock', (tester) async {
+      await openChallenge(tester, 'Both Directions');
+
+      await tester.pump(tick * 3);
+      await tester.tap(find.byIcon(Icons.pause));
+      await tester.pump(const Duration(minutes: 1));
+      expect(find.text('Paused'), findsOneWidget);
+      expect(find.text('Out of Time'), findsNothing);
+
+      await tester.tap(find.byIcon(Icons.play_arrow));
+      await tester.pump(tick * 4);
+      expect(find.text('Out of Time'), findsNothing);
+      await tester.pump(tick);
+      await tester.pumpAndSettle();
+      expect(find.text('Out of Time'), findsOneWidget);
+    });
+
+    testWidgets('relaxed clock doubles every tick', (tester) async {
+      SharedPreferences.setMockInitialValues(
+          {'accessibility.relaxedClock': true});
+      await openChallenge(tester, 'Both Directions');
+
+      await tester.pump(tick * 8);
+      expect(find.text('Out of Time'), findsNothing);
+
+      await tester.pump(tick * 8);
+      await tester.pumpAndSettle();
+      expect(find.text('Out of Time'), findsOneWidget);
+    });
+
+    testWidgets('the opening challenges have no clock', (tester) async {
+      await openChallenge(tester, 'First Shift');
+      await tester.pump(const Duration(minutes: 5));
+      expect(find.text('Out of Time'), findsNothing);
+      expect(find.text('Shift Left'), findsOneWidget);
+    });
+
+    testWidgets('the relaxed clock toggle persists', (tester) async {
+      final services = fakeServices();
+      await tester.pumpWidget(ShiftRegisterArcadeApp(services: services));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Settings'));
+      await tester.pumpAndSettle();
+
+      await tester.scrollUntilVisible(find.text('Relaxed clock'), 100);
+      await tester.tap(find.text('Relaxed clock'));
+      await tester.pumpAndSettle();
+
+      expect(services.relaxedClock.value, isTrue);
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getBool('accessibility.relaxedClock'), isTrue);
+    });
   });
 }

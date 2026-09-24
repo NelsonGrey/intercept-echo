@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -6,6 +7,7 @@ import 'package:game_shell/game_shell.dart';
 import '../app/app_services.dart';
 import '../content/challenge.dart';
 import '../content/challenge_repository.dart';
+import '../content/clock.dart';
 import '../domain/operation_type.dart';
 import '../domain/register_engine.dart';
 import '../domain/register_state.dart';
@@ -15,6 +17,11 @@ import 'results_screen.dart';
 /// The one gameplay screen in this vertical slice, laid out per the "Final
 /// HUD" artboard of the Shift-Register HUD design canvas and colored from
 /// the player's [GameThemePalette].
+///
+/// Clocked challenges run one cycle of [ticksPerCycle] ticks, shown by the
+/// ring; the cycle stops while paused, and running out fails the round
+/// just as running out of moves does. Unclocked challenges show moves
+/// remaining in the ring instead.
 ///
 /// Ad placement follows the portfolio rule (see game-shell's README "Ad
 /// placement policy"): the banner is hidden while [_isPaused] is false
@@ -48,12 +55,53 @@ class _GameplayScreenState extends State<GameplayScreen> {
 
   static const _overflowPips = 4;
 
+  /// Ticks left in the cycle, or null for an unclocked challenge.
+  int? _ticksRemaining;
+  Timer? _clock;
+
   @override
   void initState() {
     super.initState();
     _current = RegisterState(widget.challenge.initialBits);
     _movesRemaining = widget.challenge.moveBudget;
     widget.services.ads.preloadInterstitial();
+    if (widget.challenge.clocked) {
+      _ticksRemaining = ticksPerCycle;
+      _startClock();
+    }
+  }
+
+  @override
+  void dispose() {
+    _clock?.cancel();
+    super.dispose();
+  }
+
+  /// Starts (or, after a pause, restarts) the tick timer. A tick in
+  /// progress when the player paused starts over on resume.
+  void _startClock() {
+    final multiplier =
+        widget.services.relaxedClock.value ? relaxedClockMultiplier : 1;
+    _clock?.cancel();
+    _clock = Timer.periodic(widget.challenge.tickDuration * multiplier, (_) => _onTick());
+  }
+
+  void _onTick() {
+    if (_resolved || _isPaused || _ticksRemaining == null) return;
+    setState(() => _ticksRemaining = _ticksRemaining! - 1);
+    if (_ticksRemaining! <= 0) {
+      _finish(won: false, timedOut: true);
+    }
+  }
+
+  void _togglePause() {
+    setState(() => _isPaused = !_isPaused);
+    if (_ticksRemaining == null || _resolved) return;
+    if (_isPaused) {
+      _clock?.cancel();
+    } else {
+      _startClock();
+    }
   }
 
   void _applyOperation(OperationType op) {
@@ -111,9 +159,10 @@ class _GameplayScreenState extends State<GameplayScreen> {
     }
   }
 
-  Future<void> _finish({required bool won}) async {
+  Future<void> _finish({required bool won, bool timedOut = false}) async {
     if (_resolved) return;
     _resolved = true;
+    _clock?.cancel();
     final movesUsed = widget.challenge.moveBudget - _movesRemaining;
 
     // Round-exit: exactly one interstitial, on the way to a non-gameplay
@@ -127,6 +176,7 @@ class _GameplayScreenState extends State<GameplayScreen> {
         challenge: widget.challenge,
         won: won,
         movesUsed: movesUsed,
+        timedOut: timedOut,
       ),
     ));
   }
@@ -212,7 +262,7 @@ class _GameplayScreenState extends State<GameplayScreen> {
             tooltip: _isPaused ? 'Resume' : 'Pause',
             icon: Icon(_isPaused ? Icons.play_arrow : Icons.pause,
                 color: p.textPrimary),
-            onPressed: () => setState(() => _isPaused = !_isPaused),
+            onPressed: _togglePause,
           ),
         ],
       ),
@@ -300,6 +350,11 @@ class _GameplayScreenState extends State<GameplayScreen> {
   Widget _hud(GameThemePalette p, int matchCount) {
     final budget = widget.challenge.moveBudget;
     final filledPips = math.min(_overflowCharge, _overflowPips);
+    final ticks = _ticksRemaining;
+    // The ring shows the clock when there is one, moves otherwise.
+    final ringProgress = ticks != null
+        ? ticks / ticksPerCycle
+        : (budget == 0 ? 0.0 : _movesRemaining / budget);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8),
       child: Row(
@@ -327,16 +382,24 @@ class _GameplayScreenState extends State<GameplayScreen> {
             ),
           ),
           Semantics(
-            label: '$_movesRemaining of $budget moves left',
+            label: [
+              if (ticks != null) '$ticks of $ticksPerCycle clock ticks left',
+              '$_movesRemaining of $budget moves left',
+            ].join(', '),
             excludeSemantics: true,
             child: SizedBox(
               width: 104,
               height: 104,
-              child: CustomPaint(
-                painter: _RingPainter(
-                  progress: budget == 0 ? 0 : _movesRemaining / budget,
-                  track: p.clockTrack,
-                  fill: p.clockFill,
+              child: TweenAnimationBuilder<double>(
+                tween: Tween(end: ringProgress),
+                duration: const Duration(milliseconds: 250),
+                builder: (context, progress, child) => CustomPaint(
+                  painter: _RingPainter(
+                    progress: progress,
+                    track: p.clockTrack,
+                    fill: p.clockFill,
+                  ),
+                  child: child,
                 ),
                 child: Center(
                   child: Column(

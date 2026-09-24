@@ -21,6 +21,8 @@ class ChallengeRepository {
       targetBits: 0x02,
       allowedOperations: [OperationType.shiftLeft],
       moveBudget: 1,
+      // Onboarding: no clock until the player has shifted a few times.
+      clocked: false,
     ),
     Challenge(
       id: 'move-02',
@@ -30,6 +32,7 @@ class ChallengeRepository {
       targetBits: 0x08,
       allowedOperations: [OperationType.shiftLeft],
       moveBudget: 3,
+      clocked: false,
     ),
     Challenge(
       id: 'move-03',

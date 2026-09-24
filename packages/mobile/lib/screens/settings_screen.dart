@@ -4,34 +4,60 @@ import 'package:game_shell/game_shell.dart';
 import '../app/app_services.dart';
 import '../theme/game_theme.dart';
 
-/// Palette picker for the gameplay screen. A non-gameplay screen, so it
-/// carries the banner like every other menu (SRA-BR-015). It becomes the
-/// Appearance section of Settings once a Settings screen exists.
-class AppearanceScreen extends StatelessWidget {
-  const AppearanceScreen({super.key, required this.services});
+/// Settings: the gameplay palette (Appearance) and the relaxed clock
+/// (Accessibility). A non-gameplay screen, so it carries the banner like
+/// every other menu (SRA-BR-015).
+class SettingsScreen extends StatelessWidget {
+  const SettingsScreen({super.key, required this.services});
 
   final AppServices services;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Appearance')),
+      appBar: AppBar(title: const Text('Settings')),
       body: GameScreenShell(
         adService: services.ads,
-        body: ValueListenableBuilder<GameThemeId>(
-          valueListenable: services.theme,
-          builder: (context, selected, _) => ListView(
+        body: ListenableBuilder(
+          listenable: Listenable.merge([services.theme, services.relaxedClock]),
+          builder: (context, _) => ListView(
             padding: const EdgeInsets.symmetric(vertical: 8),
             children: [
+              const _SectionHeader('Appearance'),
               for (final id in gameThemeOrder)
                 _PaletteTile(
                   palette: gameThemePalettes[id]!,
-                  selected: id == selected,
+                  selected: id == services.theme.value,
                   onTap: () => services.theme.select(id),
                 ),
+              const SizedBox(height: 16),
+              const _SectionHeader('Accessibility'),
+              SwitchListTile(
+                title: const Text('Relaxed clock'),
+                subtitle: const Text('Each clock tick lasts twice as long'),
+                value: services.relaxedClock.value,
+                onChanged: services.relaxedClock.set,
+              ),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader(this.title);
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      header: true,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+        child: Text(title, style: Theme.of(context).textTheme.titleSmall),
       ),
     );
   }

@@ -1,5 +1,6 @@
 import 'package:game_shell/game_shell.dart';
 
+import '../settings/relaxed_clock_setting.dart';
 import '../theme/theme_controller.dart';
 
 /// Portfolio-standard game-shell services for this app, wired per the
@@ -13,7 +14,9 @@ class AppServices {
     EntitlementService? entitlement,
     AdService? ads,
     ThemeController? theme,
+    RelaxedClockSetting? relaxedClock,
   })  : theme = theme ?? ThemeController(),
+        relaxedClock = relaxedClock ?? RelaxedClockSetting(),
         consent = consent ?? UmpConsentService(),
         entitlement =
             entitlement ?? IapEntitlementService(adRemovalProductId: 'ad_removal'),
@@ -27,6 +30,9 @@ class AppServices {
   /// here so every screen reaches it the same way.
   final ThemeController theme;
 
+  /// Accessibility: doubles clock ticks when on.
+  final RelaxedClockSetting relaxedClock;
+
   bool _initialized = false;
 
   Future<void> initialize() async {
@@ -34,6 +40,7 @@ class AppServices {
     _initialized = true;
 
     await theme.load();
+    await relaxedClock.load();
     await consent.requestConsent();
     await entitlement.restore();
 

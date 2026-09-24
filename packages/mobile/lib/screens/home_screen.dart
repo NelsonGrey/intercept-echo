@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:game_shell/game_shell.dart';
 
-import 'appearance_screen.dart';
 import 'challenge_select_screen.dart';
+import 'settings_screen.dart';
 import '../app/app_services.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -39,11 +39,11 @@ class HomeScreen extends StatelessWidget {
               TextButton.icon(
                 onPressed: () {
                   Navigator.of(context).push(MaterialPageRoute(
-                    builder: (_) => AppearanceScreen(services: services),
+                    builder: (_) => SettingsScreen(services: services),
                   ));
                 },
-                icon: const Icon(Icons.palette_outlined),
-                label: const Text('Appearance'),
+                icon: const Icon(Icons.settings_outlined),
+                label: const Text('Settings'),
               ),
             ],
           ),
