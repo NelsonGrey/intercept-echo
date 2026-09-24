@@ -51,6 +51,7 @@ class _MessageBoardScreenState extends State<MessageBoardScreen> {
         letter,
         spareMoves: result.spareMoves,
         pointsSpent: result.pointsSpent,
+        hard: !widget.services.difficulty.showsPlaceValues,
       );
     }
     _busy = false;

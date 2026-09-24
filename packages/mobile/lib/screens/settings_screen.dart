@@ -55,7 +55,9 @@ class SettingsScreen extends StatelessWidget {
                     RadioListTile<Difficulty>(
                       value: Difficulty.hard,
                       title: Text('Hard'),
-                      subtitle: Text('Hides the cell values'),
+                      subtitle: Text(
+                        'Hides the cell values. Cracked letters score ×1.5',
+                      ),
                     ),
                   ],
                 ),

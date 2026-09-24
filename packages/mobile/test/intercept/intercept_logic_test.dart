@@ -111,6 +111,20 @@ void main() {
       expect(run.totalScore, 100 + 2 * 20);
     });
 
+    test('Hard mode scores cracked letters x1.5, costs after', () {
+      // (100 + 20) x 1.5 = 180, minus a 1-point Test.
+      run.recordCrack('S', spareMoves: 1, pointsSpent: 1, hard: true);
+      expect(run.totalScore, 179);
+    });
+
+    test('the early-guess bonus is not multiplied', () {
+      run.recordCrack('S', spareMoves: 0, hard: true);
+      final before = run.totalScore;
+      final hidden = run.hiddenLetters.length;
+      run.guess('SIGNAL FOUND');
+      expect(run.totalScore - before, 150 * hidden);
+    });
+
     test('Test costs come off the score, never below zero', () {
       run.recordCrack('S', spareMoves: 0, pointsSpent: 3);
       expect(run.totalScore, 97);

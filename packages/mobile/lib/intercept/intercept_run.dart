@@ -21,6 +21,10 @@ class InterceptScoring {
   /// Cost of each Test after the first in a letter puzzle (the first is
   /// free).
   static const testCost = 1;
+
+  /// Letters cracked in Hard mode (no place values shown) score this much
+  /// more, rounded down. The early-guess bonus is not multiplied.
+  static const hardMultiplier = 1.5;
 }
 
 /// The player's progress through the Intercept campaign: which
@@ -92,17 +96,19 @@ class InterceptRun extends ChangeNotifier {
     String letter, {
     required int spareMoves,
     int pointsSpent = 0,
+    bool hard = false,
   }) {
     if (_status != TransmissionStatus.playing || _revealed.contains(letter)) {
       return;
     }
     _revealed.add(letter);
+    final earned =
+        InterceptScoring.perLetter + InterceptScoring.perSpareMove * spareMoves;
+    final scaled = hard
+        ? (earned * InterceptScoring.hardMultiplier).floor()
+        : earned;
     // Net in one step, so Test costs are paid even from a score of 0.
-    _award(
-      InterceptScoring.perLetter +
-          InterceptScoring.perSpareMove * spareMoves -
-          pointsSpent,
-    );
+    _award(scaled - pointsSpent);
     if (hiddenLetters.isEmpty) _status = TransmissionStatus.decoded;
     _persist();
     notifyListeners();
