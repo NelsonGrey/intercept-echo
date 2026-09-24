@@ -441,7 +441,8 @@ class _GameplayScreenState extends State<GameplayScreen> {
           backgroundColor: p.buttonBg,
           foregroundColor: p.buttonFg,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          textStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+          textStyle: const TextStyle(
+              fontFamily: 'Sora', fontSize: 17, fontWeight: FontWeight.w600),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -481,8 +482,7 @@ class _BitCell extends StatelessWidget {
     final digit = Text(
       on ? '1' : '0',
       style: TextStyle(
-        fontFamily: 'Menlo',
-        fontFamilyFallback: const ['Courier', 'monospace'],
+        fontFamily: 'IBMPlexMono',
         fontSize: isTarget ? 19 : 24,
         fontWeight: on ? FontWeight.w600 : FontWeight.w500,
         color: isTarget

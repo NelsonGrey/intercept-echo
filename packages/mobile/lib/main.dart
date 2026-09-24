@@ -1,10 +1,22 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'app/app_services.dart';
 import 'screens/home_screen.dart';
 
 void main() {
+  LicenseRegistry.addLicense(_fontLicenses);
   runApp(const ShiftRegisterArcadeApp());
+}
+
+/// The bundled fonts' OFL texts, so they show on the in-app licences page
+/// (the OFL requires the licence to travel with the fonts).
+Stream<LicenseEntry> _fontLicenses() async* {
+  yield LicenseEntryWithLineBreaks(
+      ['Sora'], await rootBundle.loadString('assets/fonts/Sora-OFL.txt'));
+  yield LicenseEntryWithLineBreaks(['IBM Plex Mono'],
+      await rootBundle.loadString('assets/fonts/IBMPlexMono-OFL.txt'));
 }
 
 class ShiftRegisterArcadeApp extends StatefulWidget {
@@ -29,7 +41,11 @@ class _ShiftRegisterArcadeAppState extends State<ShiftRegisterArcadeApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Shift-Register Arcade',
-      theme: ThemeData(colorSchemeSeed: Colors.deepPurple, useMaterial3: true),
+      theme: ThemeData(
+        colorSchemeSeed: Colors.deepPurple,
+        useMaterial3: true,
+        fontFamily: 'Sora',
+      ),
       home: FutureBuilder<void>(
         future: _ready,
         builder: (context, snapshot) {
