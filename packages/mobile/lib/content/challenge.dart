@@ -6,6 +6,10 @@ import 'clock.dart';
 /// shape of that schema for now; a real data-driven loader (JSON + CI
 /// validation + solver check per SRA-TR-004) is follow-up work — see
 /// [ChallengeRepository]'s doc comment.
+/// How the target is shown: as a bit pattern to copy, or as a number the
+/// register must equal.
+enum TargetStyle { bits, number }
+
 class Challenge {
   const Challenge({
     required this.id,
@@ -17,6 +21,8 @@ class Challenge {
     required this.moveBudget,
     this.maskOperand,
     this.clocked = true,
+    this.targetStyle = TargetStyle.bits,
+    this.toggleable = false,
   });
 
   final String id;
@@ -36,6 +42,12 @@ class Challenge {
   /// Whether the round clock runs. Off only for the opening challenges, so
   /// players learn to shift before they learn to hurry.
   final bool clocked;
+
+  final TargetStyle targetStyle;
+
+  /// Whether tapping a register cell flips it. Toggle challenges also show
+  /// each cell's place value (128…1) so players learn what cells are worth.
+  final bool toggleable;
 
   Duration get tickDuration => tickDurationFor(chapter);
 }

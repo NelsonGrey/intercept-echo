@@ -50,4 +50,11 @@ class RegisterEngine {
         return OperationResult(RegisterState(state.bits & operand));
     }
   }
+
+  /// Flips the bit at [index] (0 = least significant). The Count chapter's
+  /// only move: tap a cell to switch it between 0 and 1.
+  static RegisterState toggle(RegisterState state, int index) {
+    assert(index >= 0 && index < 8);
+    return RegisterState(state.bits ^ (1 << index));
+  }
 }

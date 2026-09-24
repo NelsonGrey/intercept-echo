@@ -104,6 +104,18 @@ class _GameplayScreenState extends State<GameplayScreen> {
     }
   }
 
+  bool get _numberMode => widget.challenge.targetStyle == TargetStyle.number;
+
+  /// Count chapter: tapping a cell flips it and costs one move.
+  void _toggle(int index) {
+    if (_resolved || _isPaused || !widget.challenge.toggleable) return;
+    setState(() {
+      _current = RegisterEngine.toggle(_current, index);
+      _movesRemaining--;
+    });
+    _checkResolution();
+  }
+
   void _applyOperation(OperationType op) {
     if (_resolved || _isPaused) return;
     final result = RegisterEngine.apply(
@@ -274,6 +286,7 @@ class _GameplayScreenState extends State<GameplayScreen> {
     final matches =
         List.generate(8, (i) => _current.bitAt(7 - i) == (((target >> (7 - i)) & 1) == 1));
     final matchCount = matches.where((m) => m).length;
+    final toggleable = widget.challenge.toggleable;
 
     return Column(
       children: [
@@ -287,40 +300,89 @@ class _GameplayScreenState extends State<GameplayScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _inset(Text('TARGET', style: _label(p.textMuted, size: 12))),
-                const SizedBox(height: 10),
-                _inset(Semantics(
-                  label: 'Target ${RegisterState(target)}',
-                  excludeSemantics: true,
-                  child: _cellRow((i) => _BitCell.target(
-                      on: ((target >> (7 - i)) & 1) == 1, palette: p)),
-                )),
-                const SizedBox(height: 10),
-                _inset(SizedBox(
-                  height: 22,
-                  child: _cellRow((i) => Icon(
-                        matches[i] ? Icons.check : Icons.close,
-                        size: 18,
-                        color: matches[i] ? p.matchHit : p.matchMiss,
-                      )),
-                )),
-                const SizedBox(height: 10),
+                if (_numberMode) ...[
+                  // A number target: per-bit marks would give the answer
+                  // away, so only the number is shown.
+                  _inset(Text('MAKE THIS NUMBER',
+                      style: _label(p.textMuted, size: 12))),
+                  const SizedBox(height: 4),
+                  Center(
+                    child: Semantics(
+                      label: 'Target number $target',
+                      excludeSemantics: true,
+                      child: Text('$target',
+                          style: TextStyle(
+                              fontSize: 72,
+                              height: 1.1,
+                              fontWeight: FontWeight.w700,
+                              color: p.textPrimary)),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                ] else ...[
+                  _inset(Text('TARGET', style: _label(p.textMuted, size: 12))),
+                  const SizedBox(height: 10),
+                  _inset(Semantics(
+                    label: 'Target ${RegisterState(target)}',
+                    excludeSemantics: true,
+                    child: _cellRow((i) => _BitCell.target(
+                        on: ((target >> (7 - i)) & 1) == 1, palette: p)),
+                  )),
+                  const SizedBox(height: 10),
+                  _inset(SizedBox(
+                    height: 22,
+                    child: _cellRow((i) => Icon(
+                          matches[i] ? Icons.check : Icons.close,
+                          size: 18,
+                          color: matches[i] ? p.matchHit : p.matchMiss,
+                        )),
+                  )),
+                  const SizedBox(height: 10),
+                ],
                 Row(
                   children: [
                     _Gutter(spilled: _lastSpillLeft, left: true, palette: p),
                     const SizedBox(width: 4),
                     Expanded(
-                      child: Semantics(
-                        label: 'Register $_current, $matchCount of 8 bits match',
-                        excludeSemantics: true,
-                        child: _cellRow((i) => _BitCell.register(
-                            on: _current.bitAt(7 - i), palette: p)),
-                      ),
+                      child: toggleable
+                          ? _cellRow((i) {
+                              final index = 7 - i;
+                              final on = _current.bitAt(index);
+                              return Semantics(
+                                button: true,
+                                label: 'Cell worth ${1 << index}, '
+                                    'currently ${on ? 1 : 0}',
+                                excludeSemantics: true,
+                                child: GestureDetector(
+                                  onTap: () => _toggle(index),
+                                  child: _BitCell.register(on: on, palette: p),
+                                ),
+                              );
+                            })
+                          : Semantics(
+                              label: _numberMode
+                                  ? 'Register ${_current.bits}'
+                                  : 'Register $_current, $matchCount of 8 bits match',
+                              excludeSemantics: true,
+                              child: _cellRow((i) => _BitCell.register(
+                                  on: _current.bitAt(7 - i), palette: p)),
+                            ),
                     ),
                     const SizedBox(width: 4),
                     _Gutter(spilled: _lastSpillRight, left: false, palette: p),
                   ],
                 ),
+                if (toggleable) ...[
+                  const SizedBox(height: 6),
+                  // Place values, so players learn what each cell adds.
+                  ExcludeSemantics(
+                    child: _inset(_cellRow((i) => Text('${1 << (7 - i)}',
+                        style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: p.textMuted)))),
+                  ),
+                ],
                 const SizedBox(height: 10),
                 _inset(Text('REGISTER', style: _label(p.textMuted, size: 12))),
               ],
@@ -365,18 +427,19 @@ class _GameplayScreenState extends State<GameplayScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('MATCH', style: _label(p.textMuted)),
+                Text(_numberMode ? 'VALUE' : 'MATCH', style: _label(p.textMuted)),
                 const SizedBox(height: 4),
                 Text.rich(TextSpan(children: [
                   TextSpan(
-                      text: '$matchCount',
+                      text: _numberMode ? '${_current.bits}' : '$matchCount',
                       style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.w700,
                           color: p.textPrimary)),
-                  TextSpan(
-                      text: ' / 8',
-                      style: TextStyle(fontSize: 14, color: p.textMuted)),
+                  if (!_numberMode)
+                    TextSpan(
+                        text: ' / 8',
+                        style: TextStyle(fontSize: 14, color: p.textMuted)),
                 ])),
               ],
             ),
@@ -464,6 +527,11 @@ class _GameplayScreenState extends State<GameplayScreen> {
     ];
     return Column(
       children: [
+        if (ops.isEmpty && widget.challenge.toggleable) ...[
+          Text('Tap cells to switch them between 0 and 1',
+              style: TextStyle(fontSize: 15, color: p.textMuted)),
+          const SizedBox(height: 24),
+        ],
         if (_hasSwipe) ...[
           Text('or swipe the register left or right',
               style: TextStyle(fontSize: 13, color: p.textMuted)),

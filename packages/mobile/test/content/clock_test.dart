@@ -4,7 +4,7 @@ import 'package:shift_register_arcade/content/clock.dart';
 
 void main() {
   test('each chapter tightens the tick', () {
-    final ticks = ['Move', 'Preserve', 'Transform', 'Overclock']
+    final ticks = ['Shift', 'Preserve', 'Transform', 'Overclock']
         .map(tickDurationFor)
         .toList();
     for (var i = 1; i < ticks.length; i++) {
@@ -12,12 +12,12 @@ void main() {
     }
   });
 
-  test('only the first two Move challenges are unclocked', () {
+  test('only the opening challenges of each new mechanic are unclocked', () {
     final unclocked = ChallengeRepository.all
         .where((c) => !c.clocked)
         .map((c) => c.id)
         .toList();
-    expect(unclocked, ['move-01', 'move-02']);
+    expect(unclocked, ['count-01', 'count-02', 'count-03', 'shift-01']);
   });
 
 }

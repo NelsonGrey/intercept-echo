@@ -33,7 +33,7 @@ void main() {
     await tester.tap(find.text('Play'));
     await tester.pumpAndSettle();
 
-    expect(find.text('First Shift'), findsOneWidget);
+    expect(find.text('Make 2'), findsOneWidget);
   });
 
   testWidgets('solving a challenge hides the banner, then shows results',
@@ -44,14 +44,14 @@ void main() {
 
     await tester.tap(find.text('Play'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('First Shift'));
+    await tester.tap(find.text('Make 2'));
     await tester.pumpAndSettle();
 
     // Active gameplay: no banner.
     expect(find.byKey(const Key('fake_banner_ad')), findsNothing);
 
-    // move-01: 0x01 --shiftLeft--> 0x02, budget 1 — one tap wins it.
-    await tester.tap(find.text('Shift Left'));
+    // count-01: start 0, make 2 — tapping the cell worth 2 wins it.
+    await tester.tap(find.bySemanticsLabel('Cell worth 2, currently 0'));
     await tester.pumpAndSettle();
 
     expect(find.text('Target Matched'), findsOneWidget);
@@ -67,7 +67,7 @@ void main() {
 
     await tester.tap(find.text('Play'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Three Steps'));
+    await tester.tap(find.text('Make 1'));
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('fake_banner_ad')), findsNothing);
@@ -98,7 +98,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Play'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('First Shift'));
+    await tester.tap(find.text('Make 2'));
     await tester.pumpAndSettle();
 
     final scaffold = tester.widget<Scaffold>(find.byType(Scaffold).first);
@@ -126,17 +126,18 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Play'));
       await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(find.text(title), 200);
       await tester.tap(find.text(title));
       await tester.pumpAndSettle();
       return services;
     }
 
-    // Both Directions is a Move challenge: 8 ticks of 1.5s.
+    // Make 3 is a clocked Count challenge: 8 ticks of 1.5s.
     const tick = Duration(milliseconds: 1500);
 
     testWidgets('a clocked round fails as Out of Time after 8 ticks',
         (tester) async {
-      final services = await openChallenge(tester, 'Both Directions');
+      final services = await openChallenge(tester, 'Make 3');
 
       await tester.pump(tick * 7);
       expect(find.text('Out of Time'), findsNothing);
@@ -148,7 +149,7 @@ void main() {
     });
 
     testWidgets('pausing stops the clock', (tester) async {
-      await openChallenge(tester, 'Both Directions');
+      await openChallenge(tester, 'Make 3');
 
       await tester.pump(tick * 3);
       await tester.tap(find.byIcon(Icons.pause));
@@ -167,7 +168,7 @@ void main() {
     testWidgets('relaxed clock doubles every tick', (tester) async {
       SharedPreferences.setMockInitialValues(
           {'accessibility.relaxedClock': true});
-      await openChallenge(tester, 'Both Directions');
+      await openChallenge(tester, 'Make 3');
 
       await tester.pump(tick * 8);
       expect(find.text('Out of Time'), findsNothing);
@@ -178,10 +179,32 @@ void main() {
     });
 
     testWidgets('the opening challenges have no clock', (tester) async {
-      await openChallenge(tester, 'First Shift');
+      await openChallenge(tester, 'Make 2');
       await tester.pump(const Duration(minutes: 5));
       expect(find.text('Out of Time'), findsNothing);
-      expect(find.text('Shift Left'), findsOneWidget);
+      expect(find.text('MAKE THIS NUMBER'), findsOneWidget);
+    });
+
+    testWidgets('Shift reaches a number by doubling', (tester) async {
+      await openChallenge(tester, 'Double');
+      // shift-01: 3 -> 6 is one Shift Left.
+      await tester.tap(find.text('Shift Left'));
+      await tester.pumpAndSettle();
+      expect(find.text('Target Matched'), findsOneWidget);
+    });
+
+    testWidgets('a wrong toggle costs a move and can be undone',
+        (tester) async {
+      await openChallenge(tester, 'Make 2');
+      // count-01 budget is 3: tap 1 (wrong), tap 1 again (undo), tap 2.
+      await tester.tap(find.bySemanticsLabel('Cell worth 1, currently 0'));
+      await tester.pump();
+      expect(find.text('Target Matched'), findsNothing);
+      await tester.tap(find.bySemanticsLabel('Cell worth 1, currently 1'));
+      await tester.pump();
+      await tester.tap(find.bySemanticsLabel('Cell worth 2, currently 0'));
+      await tester.pumpAndSettle();
+      expect(find.text('Target Matched'), findsOneWidget);
     });
 
     testWidgets('the relaxed clock toggle persists', (tester) async {

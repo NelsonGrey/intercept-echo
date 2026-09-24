@@ -8,7 +8,7 @@ const int ticksPerCycle = 8;
 /// (BRD §8's Overclock is "shorter cycles"). Unknown chapters get a
 /// middle-of-the-road 1s.
 Duration tickDurationFor(String chapter) => switch (chapter) {
-      'Move' => const Duration(milliseconds: 1500),
+      'Count' || 'Shift' => const Duration(milliseconds: 1500),
       'Preserve' => const Duration(milliseconds: 1250),
       'Transform' => const Duration(milliseconds: 1000),
       'Overclock' => const Duration(milliseconds: 750),

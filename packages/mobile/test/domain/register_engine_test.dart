@@ -105,4 +105,13 @@ void main() {
       }
     }
   });
+
+  test('toggle flips exactly one bit, for every value and index', () {
+    for (var v = 0; v <= 0xFF; v++) {
+      for (var i = 0; i < 8; i++) {
+        final out = RegisterEngine.toggle(RegisterState(v), i).bits;
+        expect(out ^ v, 1 << i);
+      }
+    }
+  });
 }
