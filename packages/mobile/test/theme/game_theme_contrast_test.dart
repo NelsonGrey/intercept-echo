@@ -28,26 +28,71 @@ double _contrast(Color first, Color second) {
 const _smallText = 4.5;
 const _largeOrNonText = 3.0;
 
-typedef _Pair = (String, Color Function(GameThemePalette), Color Function(GameThemePalette), double);
+typedef _Pair = (
+  String,
+  Color Function(GameThemePalette),
+  Color Function(GameThemePalette),
+  double,
+);
 
 final List<_Pair> _pairs = [
   ('textPrimary on pageBg', (p) => p.textPrimary, (p) => p.pageBg, _smallText),
   ('textMuted on pageBg', (p) => p.textMuted, (p) => p.pageBg, _smallText),
-  ('targetOnFg on targetOnBg', (p) => p.targetOnFg, (p) => p.targetOnBg, _smallText),
+  (
+    'targetOnFg on targetOnBg',
+    (p) => p.targetOnFg,
+    (p) => p.targetOnBg,
+    _smallText,
+  ),
   ('targetOffFg on pageBg', (p) => p.targetOffFg, (p) => p.pageBg, _smallText),
-  ('overflowLabel on pageBg', (p) => p.overflowLabel, (p) => p.pageBg, _smallText),
+  (
+    'overflowLabel on pageBg',
+    (p) => p.overflowLabel,
+    (p) => p.pageBg,
+    _smallText,
+  ),
   ('buttonFg on buttonBg', (p) => p.buttonFg, (p) => p.buttonBg, _smallText),
   ('bitOnFg on bitOnBg', (p) => p.bitOnFg, (p) => p.bitOnBg, _largeOrNonText),
-  ('bitOffFg on bitOffBg', (p) => p.bitOffFg, (p) => p.bitOffBg, _largeOrNonText),
-  ('clockFill on clockTrack', (p) => p.clockFill, (p) => p.clockTrack, _largeOrNonText),
+  (
+    'bitOffFg on bitOffBg',
+    (p) => p.bitOffFg,
+    (p) => p.bitOffBg,
+    _largeOrNonText,
+  ),
+  (
+    'clockFill on clockTrack',
+    (p) => p.clockFill,
+    (p) => p.clockTrack,
+    _largeOrNonText,
+  ),
   ('matchHit on pageBg', (p) => p.matchHit, (p) => p.pageBg, _largeOrNonText),
   ('matchMiss on pageBg', (p) => p.matchMiss, (p) => p.pageBg, _largeOrNonText),
-  ('overflowAccent on overflowBg', (p) => p.overflowAccent, (p) => p.overflowBg, _largeOrNonText),
-  ('overflowAccent on pageBg', (p) => p.overflowAccent, (p) => p.pageBg, _largeOrNonText),
+  (
+    'overflowAccent on overflowBg',
+    (p) => p.overflowAccent,
+    (p) => p.overflowBg,
+    _largeOrNonText,
+  ),
+  (
+    'overflowAccent on pageBg',
+    (p) => p.overflowAccent,
+    (p) => p.pageBg,
+    _largeOrNonText,
+  ),
   ('bitOnBg on pageBg', (p) => p.bitOnBg, (p) => p.pageBg, _largeOrNonText),
   // A 0 cell must read as a square against the page, not just a digit.
-  ('bitOffBorder on pageBg', (p) => p.bitOffBorder, (p) => p.pageBg, _largeOrNonText),
-  ('targetOffBorder on pageBg', (p) => p.targetOffBorder, (p) => p.pageBg, _largeOrNonText),
+  (
+    'bitOffBorder on pageBg',
+    (p) => p.bitOffBorder,
+    (p) => p.pageBg,
+    _largeOrNonText,
+  ),
+  (
+    'targetOffBorder on pageBg',
+    (p) => p.targetOffBorder,
+    (p) => p.pageBg,
+    _largeOrNonText,
+  ),
 ];
 
 void main() {

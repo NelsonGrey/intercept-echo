@@ -7,8 +7,11 @@ import 'package:shift_register_arcade/domain/solver.dart';
 void main() {
   for (final c in ChallengeRepository.all) {
     test('${c.id} "${c.title}" is solvable within its budget', () {
-      expect(c.initialBits, isNot(c.targetBits),
-          reason: 'must not start already solved');
+      expect(
+        c.initialBits,
+        isNot(c.targetBits),
+        reason: 'must not start already solved',
+      );
       final best = shortestSolution(
         start: c.initialBits,
         target: c.targetBits,
@@ -23,7 +26,9 @@ void main() {
 
   test('Shift budgets are exactly the shortest solution', () {
     // The Shift chapter is an optimization puzzle: no spare moves.
-    for (final c in ChallengeRepository.all.where((c) => c.chapter == 'Shift')) {
+    for (final c in ChallengeRepository.all.where(
+      (c) => c.chapter == 'Shift',
+    )) {
       final best = shortestSolution(
         start: c.initialBits,
         target: c.targetBits,

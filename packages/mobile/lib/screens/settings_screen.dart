@@ -98,14 +98,14 @@ class _Swatch extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = palette;
     Widget cell({required bool on}) => Container(
-          width: 16,
-          height: 24,
-          decoration: BoxDecoration(
-            color: on ? p.bitOnBg : p.bitOffBg,
-            borderRadius: BorderRadius.circular(4),
-            border: on ? null : Border.all(color: p.bitOffBorder, width: 1.5),
-          ),
-        );
+      width: 16,
+      height: 24,
+      decoration: BoxDecoration(
+        color: on ? p.bitOnBg : p.bitOffBg,
+        borderRadius: BorderRadius.circular(4),
+        border: on ? null : Border.all(color: p.bitOffBorder, width: 1.5),
+      ),
+    );
     return ExcludeSemantics(
       child: Container(
         width: 72,
@@ -126,7 +126,9 @@ class _Swatch extends StatelessWidget {
               width: 10,
               height: 10,
               decoration: BoxDecoration(
-                  shape: BoxShape.circle, color: p.overflowAccent),
+                shape: BoxShape.circle,
+                color: p.overflowAccent,
+              ),
             ),
           ],
         ),

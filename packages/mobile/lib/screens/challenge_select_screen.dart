@@ -22,15 +22,19 @@ class ChallengeSelectScreen extends StatelessWidget {
             final challenge = ChallengeRepository.all[index];
             return ListTile(
               title: Text(challenge.title),
-              subtitle: Text('${challenge.chapter} · ${challenge.moveBudget} moves'
-                  '${challenge.clocked ? '' : ' · no clock'}'),
+              subtitle: Text(
+                '${challenge.chapter} · ${challenge.moveBudget} moves'
+                '${challenge.clocked ? '' : ' · no clock'}',
+              ),
               onTap: () {
-                Navigator.of(context).push(MaterialPageRoute(
-                  builder: (_) => GameplayScreen(
-                    services: services,
-                    challenge: challenge,
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => GameplayScreen(
+                      services: services,
+                      challenge: challenge,
+                    ),
                   ),
-                ));
+                );
               },
             );
           },

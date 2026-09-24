@@ -1,5 +1,6 @@
 import 'package:game_shell/game_shell.dart';
 
+import '../intercept/intercept_run.dart';
 import '../settings/relaxed_clock_setting.dart';
 import '../theme/theme_controller.dart';
 
@@ -15,12 +16,15 @@ class AppServices {
     AdService? ads,
     ThemeController? theme,
     RelaxedClockSetting? relaxedClock,
-  })  : theme = theme ?? ThemeController(),
-        relaxedClock = relaxedClock ?? RelaxedClockSetting(),
-        consent = consent ?? UmpConsentService(),
-        entitlement =
-            entitlement ?? IapEntitlementService(adRemovalProductId: 'ad_removal'),
-        ads = ads ?? AdMobAdService(AdMobConfig.test());
+    InterceptRun? intercept,
+  }) : intercept = intercept ?? InterceptRun(),
+       theme = theme ?? ThemeController(),
+       relaxedClock = relaxedClock ?? RelaxedClockSetting(),
+       consent = consent ?? UmpConsentService(),
+       entitlement =
+           entitlement ??
+           IapEntitlementService(adRemovalProductId: 'ad_removal'),
+       ads = ads ?? AdMobAdService(AdMobConfig.test());
 
   final ConsentService consent;
   final EntitlementService entitlement;
@@ -33,6 +37,9 @@ class AppServices {
   /// Accessibility: doubles clock ticks when on.
   final RelaxedClockSetting relaxedClock;
 
+  /// Campaign progress through the Intercept transmissions.
+  final InterceptRun intercept;
+
   bool _initialized = false;
 
   Future<void> initialize() async {
@@ -41,6 +48,7 @@ class AppServices {
 
     await theme.load();
     await relaxedClock.load();
+    await intercept.load();
     await consent.requestConsent();
     await entitlement.restore();
 

@@ -6,12 +6,12 @@ enum OperationType { shiftLeft, shiftRight, rotateLeft, rotateRight, maskAnd }
 
 extension OperationTypeLabel on OperationType {
   String get label => switch (this) {
-        OperationType.shiftLeft => 'Shift Left',
-        OperationType.shiftRight => 'Shift Right',
-        OperationType.rotateLeft => 'Rotate Left',
-        OperationType.rotateRight => 'Rotate Right',
-        OperationType.maskAnd => 'Mask (AND)',
-      };
+    OperationType.shiftLeft => 'Shift Left',
+    OperationType.shiftRight => 'Shift Right',
+    OperationType.rotateLeft => 'Rotate Left',
+    OperationType.rotateRight => 'Rotate Right',
+    OperationType.maskAnd => 'Mask (AND)',
+  };
 
   /// Whether this operation can push a bit out of the register and produce
   /// an overflow resource (BR-003). Rotate wraps the bit back in, so it

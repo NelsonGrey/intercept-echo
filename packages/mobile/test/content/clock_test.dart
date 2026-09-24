@@ -4,9 +4,12 @@ import 'package:shift_register_arcade/content/clock.dart';
 
 void main() {
   test('each chapter tightens the tick', () {
-    final ticks = ['Shift', 'Preserve', 'Transform', 'Overclock']
-        .map(tickDurationFor)
-        .toList();
+    final ticks = [
+      'Shift',
+      'Preserve',
+      'Transform',
+      'Overclock',
+    ].map(tickDurationFor).toList();
     for (var i = 1; i < ticks.length; i++) {
       expect(ticks[i], lessThan(ticks[i - 1]));
     }
@@ -19,5 +22,4 @@ void main() {
         .toList();
     expect(unclocked, ['count-01', 'count-02', 'count-03', 'shift-01']);
   });
-
 }

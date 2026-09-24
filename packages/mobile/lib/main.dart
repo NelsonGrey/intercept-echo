@@ -13,15 +13,17 @@ void main() {
 /// The bundled fonts' OFL texts, so they show on the in-app licences page
 /// (the OFL requires the licence to travel with the fonts).
 Stream<LicenseEntry> _fontLicenses() async* {
-  yield LicenseEntryWithLineBreaks(
-      ['Sora'], await rootBundle.loadString('assets/fonts/Sora-OFL.txt'));
-  yield LicenseEntryWithLineBreaks(['IBM Plex Mono'],
-      await rootBundle.loadString('assets/fonts/IBMPlexMono-OFL.txt'));
+  yield LicenseEntryWithLineBreaks([
+    'Sora',
+  ], await rootBundle.loadString('assets/fonts/Sora-OFL.txt'));
+  yield LicenseEntryWithLineBreaks([
+    'IBM Plex Mono',
+  ], await rootBundle.loadString('assets/fonts/IBMPlexMono-OFL.txt'));
 }
 
 class ShiftRegisterArcadeApp extends StatefulWidget {
   const ShiftRegisterArcadeApp({super.key, AppServices? services})
-      : _injectedServices = services;
+    : _injectedServices = services;
 
   /// Tests inject fakes here instead of letting the real
   /// UMP/AdMob/IAP services run — see game-shell's README: "Widget tests
@@ -29,8 +31,7 @@ class ShiftRegisterArcadeApp extends StatefulWidget {
   final AppServices? _injectedServices;
 
   @override
-  State<ShiftRegisterArcadeApp> createState() =>
-      _ShiftRegisterArcadeAppState();
+  State<ShiftRegisterArcadeApp> createState() => _ShiftRegisterArcadeAppState();
 }
 
 class _ShiftRegisterArcadeAppState extends State<ShiftRegisterArcadeApp> {

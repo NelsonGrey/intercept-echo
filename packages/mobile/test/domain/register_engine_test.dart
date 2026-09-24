@@ -7,8 +7,10 @@ void main() {
   group('shiftLeft — exhaustive over all 256 values (SRA-TR-002)', () {
     for (var value = 0; value <= 0xFF; value++) {
       test('0x${value.toRadixString(16)}', () {
-        final result =
-            RegisterEngine.apply(RegisterState(value), OperationType.shiftLeft);
+        final result = RegisterEngine.apply(
+          RegisterState(value),
+          OperationType.shiftLeft,
+        );
         expect(result.state.bits, (value << 1) & 0xFF);
         expect(result.overflowBit, (value >> 7) & 1);
       });
@@ -19,7 +21,9 @@ void main() {
     for (var value = 0; value <= 0xFF; value++) {
       test('0x${value.toRadixString(16)}', () {
         final result = RegisterEngine.apply(
-            RegisterState(value), OperationType.shiftRight);
+          RegisterState(value),
+          OperationType.shiftRight,
+        );
         expect(result.state.bits, value >> 1);
         expect(result.overflowBit, value & 1);
       });
@@ -29,8 +33,7 @@ void main() {
   group('mask AND — exhaustive over all 256 values with a fixed operand', () {
     const operand = 0xF0;
     for (var value = 0; value <= 0xFF; value++) {
-      test('0x${value.toRadixString(16)} & 0x${operand.toRadixString(16)}',
-          () {
+      test('0x${value.toRadixString(16)} & 0x${operand.toRadixString(16)}', () {
         final result = RegisterEngine.apply(
           RegisterState(value),
           OperationType.maskAnd,
@@ -45,9 +48,13 @@ void main() {
     test('rotateRight undoes rotateLeft for every value', () {
       for (var value = 0; value <= 0xFF; value++) {
         final rotated = RegisterEngine.apply(
-            RegisterState(value), OperationType.rotateLeft);
+          RegisterState(value),
+          OperationType.rotateLeft,
+        );
         final restored = RegisterEngine.apply(
-            rotated.state, OperationType.rotateRight);
+          rotated.state,
+          OperationType.rotateRight,
+        );
         expect(restored.state.bits, value);
       }
     });
@@ -55,9 +62,13 @@ void main() {
     test('rotateLeft undoes rotateRight for every value', () {
       for (var value = 0; value <= 0xFF; value++) {
         final rotated = RegisterEngine.apply(
-            RegisterState(value), OperationType.rotateRight);
+          RegisterState(value),
+          OperationType.rotateRight,
+        );
         final restored = RegisterEngine.apply(
-            rotated.state, OperationType.rotateLeft);
+          rotated.state,
+          OperationType.rotateLeft,
+        );
         expect(restored.state.bits, value);
       }
     });
@@ -65,9 +76,13 @@ void main() {
     test('rotate never produces overflow', () {
       for (var value = 0; value <= 0xFF; value++) {
         final left = RegisterEngine.apply(
-            RegisterState(value), OperationType.rotateLeft);
+          RegisterState(value),
+          OperationType.rotateLeft,
+        );
         final right = RegisterEngine.apply(
-            RegisterState(value), OperationType.rotateRight);
+          RegisterState(value),
+          OperationType.rotateRight,
+        );
         expect(left.overflowBit, isNull);
         expect(right.overflowBit, isNull);
       }
@@ -99,8 +114,11 @@ void main() {
   test('operations never produce an out-of-range value', () {
     for (var value = 0; value <= 0xFF; value++) {
       for (final op in OperationType.values) {
-        final result = RegisterEngine.apply(RegisterState(value), op,
-            maskOperand: 0xAA);
+        final result = RegisterEngine.apply(
+          RegisterState(value),
+          op,
+          maskOperand: 0xAA,
+        );
         expect(result.state.bits, inInclusiveRange(0, 0xFF));
       }
     }

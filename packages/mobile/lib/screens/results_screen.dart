@@ -38,9 +38,11 @@ class ResultsScreen extends StatelessWidget {
   }
 
   void _play(BuildContext context, Challenge c) {
-    Navigator.of(context).pushReplacement(MaterialPageRoute(
-      builder: (_) => GameplayScreen(services: services, challenge: c),
-    ));
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (_) => GameplayScreen(services: services, challenge: c),
+      ),
+    );
   }
 
   @override
@@ -64,14 +66,17 @@ class ResultsScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 8),
-              Text('${challenge.title} · $movesUsed/${challenge.moveBudget} moves'),
+              Text(
+                '${challenge.title} · $movesUsed/${challenge.moveBudget} moves',
+              ),
               const SizedBox(height: 32),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   OutlinedButton(
-                    onPressed: () => Navigator.of(context)
-                        .popUntil((route) => route.isFirst),
+                    onPressed: () => Navigator.of(
+                      context,
+                    ).popUntil((route) => route.isFirst),
                     child: const Text('Menu'),
                   ),
                   const SizedBox(width: 16),

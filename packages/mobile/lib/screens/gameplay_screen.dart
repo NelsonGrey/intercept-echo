@@ -11,6 +11,7 @@ import '../content/clock.dart';
 import '../domain/operation_type.dart';
 import '../domain/register_engine.dart';
 import '../domain/register_state.dart';
+import '../intercept/message_view.dart';
 import '../theme/game_theme.dart';
 import 'results_screen.dart';
 
@@ -34,10 +35,17 @@ class GameplayScreen extends StatefulWidget {
     super.key,
     required this.services,
     required this.challenge,
+    this.letter,
   });
 
   final AppServices services;
   final Challenge challenge;
+
+  /// Set when this puzzle cracks a letter of an Intercept transmission: the
+  /// screen then shows the message and signal bars, and on Continue pops
+  /// back to the message board with a [LetterResult] — the board owns the
+  /// transmission's round-exit interstitial, not each letter.
+  final LetterContext? letter;
 
   @override
   State<GameplayScreen> createState() => _GameplayScreenState();
@@ -201,6 +209,12 @@ class _GameplayScreenState extends State<GameplayScreen> {
     final outcome = _outcome;
     if (outcome == null || _leaving) return;
     _leaving = true;
+    if (widget.letter != null) {
+      Navigator.of(
+        context,
+      ).pop(LetterResult(cracked: outcome.won, spareMoves: _movesRemaining));
+      return;
+    }
     await widget.services.ads.showInterstitial();
 
     if (!mounted) return;
@@ -232,7 +246,7 @@ class _GameplayScreenState extends State<GameplayScreen> {
       valueListenable: widget.services.theme,
       builder: (context, id, _) {
         final p = gameThemePalettes[id]!;
-        return Scaffold(
+        final scaffold = Scaffold(
           backgroundColor: p.pageBg,
           body: GameScreenShell(
             adService: widget.services.ads,
@@ -248,6 +262,22 @@ class _GameplayScreenState extends State<GameplayScreen> {
                 child: Column(
                   children: [
                     _header(p),
+                    if (widget.letter != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: MessageView(
+                          transmission: widget.letter!.transmission,
+                          revealed: _outcome?.won == true
+                              ? {
+                                  ...widget.letter!.revealed,
+                                  widget.letter!.letter,
+                                }
+                              : widget.letter!.revealed,
+                          highlight: widget.letter!.letter,
+                          palette: p,
+                          compact: true,
+                        ),
+                      ),
                     Expanded(
                       child: _isPaused
                           ? Center(
@@ -279,19 +309,69 @@ class _GameplayScreenState extends State<GameplayScreen> {
             ),
           ),
         );
+        if (widget.letter == null) return scaffold;
+        // Intercept commit rule: leaving an unfinished letter forfeits it.
+        return PopScope(
+          canPop: false,
+          onPopInvokedWithResult: (didPop, _) {
+            if (!didPop) _leaveLetter();
+          },
+          child: scaffold,
+        );
       },
     );
+  }
+
+  Future<void> _leaveLetter() async {
+    if (_resolved) {
+      _continue();
+      return;
+    }
+    final wasPaused = _isPaused;
+    if (!wasPaused) _togglePause();
+    final leave = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Leave this letter?'),
+        content: const Text('Leaving before you crack it costs a signal bar.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Keep going'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Leave'),
+          ),
+        ],
+      ),
+    );
+    if (!mounted) return;
+    if (leave == true) {
+      _resolved = true;
+      _clock?.cancel();
+      Navigator.of(context).pop(const LetterResult.abandoned());
+    } else if (!wasPaused) {
+      _togglePause();
+    }
   }
 
   Widget _resultCard(GameThemePalette p, _Outcome outcome) {
     final c = widget.challenge;
     final target = c.targetBits;
     final value = _current.bits;
-    final title = outcome.won
+    final letter = widget.letter;
+    final title = letter != null && outcome.won
+        ? 'Letter cracked'
+        : outcome.won
         ? 'Target Matched'
         : (outcome.timedOut ? 'Out of Time' : 'Out of Moves');
     final String detail;
-    if (c.targetStyle == TargetStyle.number) {
+    if (letter != null) {
+      detail = outcome.won
+          ? '$target = ${letter.letter}'
+          : 'The letter stays hidden. You lose a signal bar.';
+    } else if (c.targetStyle == TargetStyle.number) {
       detail = outcome.won
           ? 'You made $target.'
           : 'The register is $value. The target was $target.';
@@ -336,12 +416,14 @@ class _GameplayScreenState extends State<GameplayScreen> {
                   size: 28,
                 ),
                 const SizedBox(width: 10),
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w700,
-                    color: p.textPrimary,
+                Flexible(
+                  child: Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w700,
+                      color: p.textPrimary,
+                    ),
                   ),
                 ),
               ],
@@ -375,7 +457,9 @@ class _GameplayScreenState extends State<GameplayScreen> {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                child: const Text('Continue'),
+                child: Text(
+                  widget.letter != null ? 'Back to the message' : 'Continue',
+                ),
               ),
             ),
           ],
@@ -390,7 +474,9 @@ class _GameplayScreenState extends State<GameplayScreen> {
       child: Row(
         children: [
           IconButton(
-            tooltip: 'Back to challenges',
+            tooltip: widget.letter != null
+                ? 'Back to the message'
+                : 'Back to challenges',
             icon: Icon(Icons.chevron_left, color: p.textPrimary),
             onPressed: () => Navigator.of(context).maybePop(),
           ),
@@ -399,12 +485,20 @@ class _GameplayScreenState extends State<GameplayScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  _chapterPosition.toUpperCase(),
+                  (widget.letter != null
+                          ? 'Letter ${widget.letter!.letterNumber} of '
+                                '${widget.letter!.letterTotal}'
+                          : _chapterPosition)
+                      .toUpperCase(),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: _label(p.textMuted, size: 12),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   widget.challenge.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
@@ -477,6 +571,13 @@ class _GameplayScreenState extends State<GameplayScreen> {
                       ),
                     ),
                   ),
+                  if (widget.letter != null)
+                    Center(
+                      child: Text(
+                        'to decode the highlighted letter',
+                        style: TextStyle(fontSize: 13, color: p.textMuted),
+                      ),
+                    ),
                   const SizedBox(height: 20),
                 ] else ...[
                   _inset(Text('TARGET', style: _label(p.textMuted, size: 12))),
@@ -686,34 +787,40 @@ class _GameplayScreenState extends State<GameplayScreen> {
               ),
             ),
           ),
-          SizedBox(
-            width: 96,
-            child: Semantics(
-              label: 'Overflow charge $_overflowCharge',
-              excludeSemantics: true,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text('OVERFLOW', style: _label(p.overflowLabel)),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      for (var i = 0; i < _overflowPips; i++)
-                        Padding(
-                          padding: EdgeInsets.only(left: i == 0 ? 0 : 4),
-                          child: _Pip(
-                            filled: i < filledPips,
-                            color: p.overflowAccent,
-                            size: 14,
+          if (widget.letter != null)
+            SizedBox(
+              width: 96,
+              child: SignalBars(bars: widget.letter!.bars, palette: p),
+            )
+          else
+            SizedBox(
+              width: 96,
+              child: Semantics(
+                label: 'Overflow charge $_overflowCharge',
+                excludeSemantics: true,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text('OVERFLOW', style: _label(p.overflowLabel)),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        for (var i = 0; i < _overflowPips; i++)
+                          Padding(
+                            padding: EdgeInsets.only(left: i == 0 ? 0 : 4),
+                            child: _Pip(
+                              filled: i < filledPips,
+                              color: p.overflowAccent,
+                              size: 14,
+                            ),
                           ),
-                        ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
         ],
       ),
     );

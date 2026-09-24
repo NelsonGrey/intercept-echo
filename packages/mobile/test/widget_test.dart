@@ -10,10 +10,10 @@ import 'package:shift_register_arcade/theme/game_theme.dart';
 // doesn't have, so every test here injects the Fake* services (matching
 // game-shell's own testing guidance) rather than booting the real ones.
 AppServices fakeServices() => AppServices(
-      consent: FakeConsentService(),
-      entitlement: FakeEntitlementService(),
-      ads: FakeAdService(),
-    );
+  consent: FakeConsentService(),
+  entitlement: FakeEntitlementService(),
+  ads: FakeAdService(),
+);
 
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
@@ -26,23 +26,24 @@ void main() {
     expect(find.byKey(const Key('fake_banner_ad')), findsOneWidget);
   });
 
-  testWidgets('Play navigates to the challenge list', (tester) async {
+  testWidgets('Practice opens the challenge list', (tester) async {
     await tester.pumpWidget(ShiftRegisterArcadeApp(services: fakeServices()));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Play'));
+    await tester.tap(find.text('Practice'));
     await tester.pumpAndSettle();
 
     expect(find.text('Make 2'), findsOneWidget);
   });
 
-  testWidgets('solving a challenge hides the banner, then shows results',
-      (tester) async {
+  testWidgets('solving a challenge hides the banner, then shows results', (
+    tester,
+  ) async {
     final services = fakeServices();
     await tester.pumpWidget(ShiftRegisterArcadeApp(services: services));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Play'));
+    await tester.tap(find.text('Practice'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Make 2'));
     await tester.pumpAndSettle();
@@ -76,7 +77,7 @@ void main() {
     await tester.pumpWidget(ShiftRegisterArcadeApp(services: fakeServices()));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Play'));
+    await tester.tap(find.text('Practice'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Make 1'));
     await tester.pumpAndSettle();
@@ -90,8 +91,9 @@ void main() {
     expect(find.byKey(const Key('fake_banner_ad')), findsOneWidget);
   });
 
-  testWidgets('choosing a palette recolors gameplay and persists',
-      (tester) async {
+  testWidgets('choosing a palette recolors gameplay and persists', (
+    tester,
+  ) async {
     final services = fakeServices();
     await tester.pumpWidget(ShiftRegisterArcadeApp(services: services));
     await tester.pumpAndSettle();
@@ -107,18 +109,21 @@ void main() {
 
     await tester.pageBack();
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Play'));
+    await tester.tap(find.text('Practice'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Make 2'));
     await tester.pumpAndSettle();
 
     final scaffold = tester.widget<Scaffold>(find.byType(Scaffold).first);
-    expect(scaffold.backgroundColor,
-        gameThemePalettes[GameThemeId.arcadeNeon]!.pageBg);
+    expect(
+      scaffold.backgroundColor,
+      gameThemePalettes[GameThemeId.arcadeNeon]!.pageBg,
+    );
   });
 
-  testWidgets('a saved palette loads on launch; an unknown one falls back',
-      (tester) async {
+  testWidgets('a saved palette loads on launch; an unknown one falls back', (
+    tester,
+  ) async {
     SharedPreferences.setMockInitialValues({'gameplay.theme': 'warmSunset'});
     final services = fakeServices();
     await tester.pumpWidget(ShiftRegisterArcadeApp(services: services));
@@ -135,7 +140,7 @@ void main() {
       final services = fakeServices();
       await tester.pumpWidget(ShiftRegisterArcadeApp(services: services));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Play'));
+      await tester.tap(find.text('Practice'));
       await tester.pumpAndSettle();
       await tester.scrollUntilVisible(find.text(title), 200);
       await tester.tap(find.text(title));
@@ -146,8 +151,9 @@ void main() {
     // Make 3 is a clocked Count challenge: 8 ticks of 1.5s.
     const tick = Duration(milliseconds: 1500);
 
-    testWidgets('a clocked round fails as Out of Time after 8 ticks',
-        (tester) async {
+    testWidgets('a clocked round fails as Out of Time after 8 ticks', (
+      tester,
+    ) async {
       final services = await openChallenge(tester, 'Make 3');
 
       await tester.pump(tick * 7);
@@ -185,8 +191,9 @@ void main() {
     });
 
     testWidgets('relaxed clock doubles every tick', (tester) async {
-      SharedPreferences.setMockInitialValues(
-          {'accessibility.relaxedClock': true});
+      SharedPreferences.setMockInitialValues({
+        'accessibility.relaxedClock': true,
+      });
       await openChallenge(tester, 'Make 3');
 
       await tester.pump(tick * 8);
@@ -212,8 +219,9 @@ void main() {
       expect(find.text('Target Matched'), findsOneWidget);
     });
 
-    testWidgets('a wrong toggle costs a move and can be undone',
-        (tester) async {
+    testWidgets('a wrong toggle costs a move and can be undone', (
+      tester,
+    ) async {
       await openChallenge(tester, 'Make 2');
       // count-01 budget is 3: tap 1 (wrong), tap 1 again (undo), tap 2.
       await tester.tap(find.bySemanticsLabel('Cell worth 1, currently 0'));
@@ -247,7 +255,7 @@ void main() {
     final services = fakeServices();
     await tester.pumpWidget(ShiftRegisterArcadeApp(services: services));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Play'));
+    await tester.tap(find.text('Practice'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Make 2'));
     await tester.pumpAndSettle();
@@ -255,19 +263,20 @@ void main() {
     await tester.tap(find.bySemanticsLabel('Cell worth 2, currently 0'));
     await tester.pumpAndSettle();
     // The cell reads 1 now; tapping it again must not undo the win.
-    await tester.tap(find.bySemanticsLabel('Cell worth 2, currently 1'),
-        warnIfMissed: false);
+    await tester.tap(
+      find.bySemanticsLabel('Cell worth 2, currently 1'),
+      warnIfMissed: false,
+    );
     await tester.pumpAndSettle();
     expect(find.bySemanticsLabel('Cell worth 2, currently 1'), findsOneWidget);
     expect(find.text('Target Matched'), findsOneWidget);
   });
 
-  testWidgets('Next after a win opens the following challenge',
-      (tester) async {
+  testWidgets('Next after a win opens the following challenge', (tester) async {
     final services = fakeServices();
     await tester.pumpWidget(ShiftRegisterArcadeApp(services: services));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Play'));
+    await tester.tap(find.text('Practice'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Make 2'));
     await tester.pumpAndSettle();
