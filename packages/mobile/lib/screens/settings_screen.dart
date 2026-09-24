@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:game_shell/game_shell.dart';
 
 import '../app/app_services.dart';
+import '../settings/difficulty_setting.dart';
 import '../theme/game_theme.dart';
 
 /// Settings: the gameplay palette (Appearance) and the relaxed clock
@@ -19,7 +20,11 @@ class SettingsScreen extends StatelessWidget {
       body: GameScreenShell(
         adService: services.ads,
         body: ListenableBuilder(
-          listenable: Listenable.merge([services.theme, services.relaxedClock]),
+          listenable: Listenable.merge([
+            services.theme,
+            services.relaxedClock,
+            services.difficulty,
+          ]),
           builder: (context, _) => ListView(
             padding: const EdgeInsets.symmetric(vertical: 8),
             children: [
@@ -30,6 +35,31 @@ class SettingsScreen extends StatelessWidget {
                   selected: id == services.theme.value,
                   onTap: () => services.theme.select(id),
                 ),
+              const SizedBox(height: 16),
+              const _SectionHeader('Difficulty'),
+              RadioGroup<Difficulty>(
+                groupValue: services.difficulty.value,
+                onChanged: (d) {
+                  if (d != null) services.difficulty.set(d);
+                },
+                child: const Column(
+                  children: [
+                    RadioListTile<Difficulty>(
+                      value: Difficulty.easy,
+                      title: Text('Easy'),
+                      subtitle: Text(
+                        'Shows what each cell is worth: 1, 2, 4, 8, 16, 32, '
+                        '64, 128',
+                      ),
+                    ),
+                    RadioListTile<Difficulty>(
+                      value: Difficulty.hard,
+                      title: Text('Hard'),
+                      subtitle: Text('Hides the cell values'),
+                    ),
+                  ],
+                ),
+              ),
               const SizedBox(height: 16),
               const _SectionHeader('Accessibility'),
               SwitchListTile(

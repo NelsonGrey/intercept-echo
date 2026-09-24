@@ -139,6 +139,10 @@ class _GameplayScreenState extends State<GameplayScreen> {
 
   bool get _numberMode => widget.challenge.targetStyle == TargetStyle.number;
 
+  /// Place values under the cells: number puzzles in Easy mode only.
+  bool get _showPlaceValues =>
+      _numberMode && widget.services.difficulty.showsPlaceValues;
+
   /// Count chapter: tapping a cell flips it and costs one move.
   void _toggle(int index) {
     if (_resolved || _isPaused || !widget.challenge.toggleable) return;
@@ -679,9 +683,13 @@ class _GameplayScreenState extends State<GameplayScreen> {
                               final on = _current.bitAt(index);
                               return Semantics(
                                 button: true,
-                                label:
-                                    'Cell worth ${1 << index}, '
-                                    'currently ${on ? 1 : 0}',
+                                // Hard mode hides place values on screen,
+                                // so screen readers name cells by position.
+                                label: _showPlaceValues
+                                    ? 'Cell worth ${1 << index}, '
+                                          'currently ${on ? 1 : 0}'
+                                    : 'Cell ${8 - index} of 8, '
+                                          'currently ${on ? 1 : 0}',
                                 excludeSemantics: true,
                                 child: GestureDetector(
                                   onTap: () => _toggle(index),
@@ -706,9 +714,10 @@ class _GameplayScreenState extends State<GameplayScreen> {
                     _Gutter(spilled: _lastSpillRight, left: false, palette: p),
                   ],
                 ),
-                if (toggleable) ...[
+                if (_showPlaceValues) ...[
                   const SizedBox(height: 6),
-                  // Place values, so players learn what each cell adds.
+                  // Easy mode: place values, so players see what each cell
+                  // adds. Hard mode leaves them to the player.
                   ExcludeSemantics(
                     child: _inset(
                       _cellRow(

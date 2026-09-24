@@ -241,8 +241,11 @@ void main() {
       await tester.tap(find.text('Settings'));
       await tester.pumpAndSettle();
 
-      await tester.scrollUntilVisible(find.text('Relaxed clock'), 100);
-      await tester.tap(find.text('Relaxed clock'));
+      final toggle = find.widgetWithText(SwitchListTile, 'Relaxed clock');
+      await tester.scrollUntilVisible(toggle, 100);
+      await tester.ensureVisible(toggle);
+      await tester.pumpAndSettle();
+      await tester.tap(toggle);
       await tester.pumpAndSettle();
 
       expect(services.relaxedClock.value, isTrue);

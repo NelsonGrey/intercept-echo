@@ -190,4 +190,39 @@ void main() {
     expect(services.intercept.revealed, {'K'});
     expect(services.intercept.totalScore, 100 + 20 - 1);
   });
+
+  testWidgets('Easy shows cell values; Hard hides them and is saved', (
+    tester,
+  ) async {
+    final services = await openBoard(tester);
+    await tester.tap(find.text('Crack next letter'));
+    await tester.pumpAndSettle();
+    expect(find.text('128'), findsOneWidget); // Easy is the default
+    expect(find.bySemanticsLabel('Cell worth 16, currently 0'), findsOneWidget);
+
+    // Leave the letter (costs a bar), go to Settings, choose Hard.
+    await tester.tap(find.byTooltip('Back to the message'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Leave'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Menu'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Settings'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.text('Hard'), 100);
+    await tester.tap(find.text('Hard'));
+    await tester.pumpAndSettle();
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getString('gameplay.difficulty'), 'hard');
+
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Play'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Crack next letter'));
+    await tester.pumpAndSettle();
+    expect(find.text('128'), findsNothing);
+    expect(find.bySemanticsLabel('Cell 4 of 8, currently 0'), findsOneWidget);
+    expect(services.difficulty.showsPlaceValues, isFalse);
+  });
 }

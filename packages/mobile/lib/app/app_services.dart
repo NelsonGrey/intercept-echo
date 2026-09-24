@@ -1,6 +1,7 @@
 import 'package:game_shell/game_shell.dart';
 
 import '../intercept/intercept_run.dart';
+import '../settings/difficulty_setting.dart';
 import '../settings/relaxed_clock_setting.dart';
 import '../theme/theme_controller.dart';
 
@@ -17,7 +18,9 @@ class AppServices {
     ThemeController? theme,
     RelaxedClockSetting? relaxedClock,
     InterceptRun? intercept,
-  }) : intercept = intercept ?? InterceptRun(),
+    DifficultySetting? difficulty,
+  }) : difficulty = difficulty ?? DifficultySetting(),
+       intercept = intercept ?? InterceptRun(),
        theme = theme ?? ThemeController(),
        relaxedClock = relaxedClock ?? RelaxedClockSetting(),
        consent = consent ?? UmpConsentService(),
@@ -37,6 +40,9 @@ class AppServices {
   /// Accessibility: doubles clock ticks when on.
   final RelaxedClockSetting relaxedClock;
 
+  /// Easy shows cell place values; Hard hides them.
+  final DifficultySetting difficulty;
+
   /// Campaign progress through the Intercept transmissions.
   final InterceptRun intercept;
 
@@ -48,6 +54,7 @@ class AppServices {
 
     await theme.load();
     await relaxedClock.load();
+    await difficulty.load();
     await intercept.load();
     await consent.requestConsent();
     await entitlement.restore();
