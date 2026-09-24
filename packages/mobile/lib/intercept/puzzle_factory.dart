@@ -48,6 +48,10 @@ class PuzzleFactory {
         moveBudget: flips + 1,
         targetStyle: TargetStyle.number,
         toggleable: true,
+        // Count letters are committed with Submit, never auto-won. Once the
+        // tutorial is over, the live value is hidden too (Test reveals it).
+        requireSubmit: true,
+        hideValue: transmission.key != 0,
         clocked: transmission.clocked,
       );
     }

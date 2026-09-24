@@ -24,12 +24,20 @@ class LetterContext {
 
 /// What a letter puzzle hands back to the message board.
 class LetterResult {
-  const LetterResult({required this.cracked, this.spareMoves = 0});
+  const LetterResult({
+    required this.cracked,
+    this.spareMoves = 0,
+    this.pointsSpent = 0,
+  });
 
-  const LetterResult.abandoned() : this(cracked: false);
+  const LetterResult.abandoned({int pointsSpent = 0})
+    : this(cracked: false, pointsSpent: pointsSpent);
 
   final bool cracked;
   final int spareMoves;
+
+  /// Points spent on paid Tests during the puzzle.
+  final int pointsSpent;
 }
 
 /// The intercepted message as hangman slots: cracked letters, blanks, the

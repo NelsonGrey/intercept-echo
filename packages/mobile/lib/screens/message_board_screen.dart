@@ -45,9 +45,13 @@ class _MessageBoardScreenState extends State<MessageBoardScreen> {
       ),
     );
     if (result == null || !result.cracked) {
-      _run.recordFailure(letter);
+      _run.recordFailure(letter, pointsSpent: result?.pointsSpent ?? 0);
     } else {
-      _run.recordCrack(letter, spareMoves: result.spareMoves);
+      _run.recordCrack(
+        letter,
+        spareMoves: result.spareMoves,
+        pointsSpent: result.pointsSpent,
+      );
     }
     _busy = false;
     await _afterChange();

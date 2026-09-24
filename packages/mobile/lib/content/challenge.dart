@@ -23,6 +23,8 @@ class Challenge {
     this.clocked = true,
     this.targetStyle = TargetStyle.bits,
     this.toggleable = false,
+    this.requireSubmit = false,
+    this.hideValue = false,
   });
 
   final String id;
@@ -48,6 +50,14 @@ class Challenge {
   /// Whether tapping a register cell flips it. Toggle challenges also show
   /// each cell's place value (128…1) so players learn what cells are worth.
   final bool toggleable;
+
+  /// The round does not win on its own when the register matches: the
+  /// player must press Submit. A wrong Submit costs a move.
+  final bool requireSubmit;
+
+  /// The live decimal readout is hidden; the player works out the value
+  /// from the bits, or spends a Test to see it.
+  final bool hideValue;
 
   Duration get tickDuration => tickDurationFor(chapter);
 }

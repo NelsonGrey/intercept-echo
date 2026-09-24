@@ -111,6 +111,13 @@ void main() {
       expect(run.totalScore, 100 + 2 * 20);
     });
 
+    test('Test costs come off the score, never below zero', () {
+      run.recordCrack('S', spareMoves: 0, pointsSpent: 3);
+      expect(run.totalScore, 97);
+      run.recordFailure('I', pointsSpent: 500);
+      expect(run.totalScore, 0);
+    });
+
     test('failures cost bars and the fourth loses the transmission', () {
       for (var i = 0; i < 3; i++) {
         run.recordFailure('S');

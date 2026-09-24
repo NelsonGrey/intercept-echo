@@ -11,6 +11,7 @@ import '../content/clock.dart';
 import '../domain/operation_type.dart';
 import '../domain/register_engine.dart';
 import '../domain/register_state.dart';
+import '../intercept/intercept_run.dart';
 import '../intercept/message_view.dart';
 import '../theme/game_theme.dart';
 import 'results_screen.dart';
@@ -66,6 +67,16 @@ class _GameplayScreenState extends State<GameplayScreen> {
   /// 1-bits pushed off either end (BR-003's overflow resource). Counted and
   /// shown, but not yet spendable — the Overclock chapter adds that.
   int _overflowCharge = 0;
+
+  /// Tests used this puzzle; the first is free, later ones cost points.
+  int _testsUsed = 0;
+  int _pointsSpent = 0;
+
+  /// The register value at the last Test, shown until the register changes.
+  int? _testedBits;
+
+  /// Brief feedback after a wrong Submit.
+  String? _submitNote;
 
   /// The last bit that spilled out of each end, or null before any spill.
   int? _lastSpillLeft;
@@ -131,11 +142,53 @@ class _GameplayScreenState extends State<GameplayScreen> {
   /// Count chapter: tapping a cell flips it and costs one move.
   void _toggle(int index) {
     if (_resolved || _isPaused || !widget.challenge.toggleable) return;
+    // With Submit, the last move can be spent and still submitted; toggling
+    // stops once the moves run out.
+    if (widget.challenge.requireSubmit && _movesRemaining <= 0) return;
     setState(() {
       _current = RegisterEngine.toggle(_current, index);
       _movesRemaining--;
+      _submitNote = null;
     });
-    _checkResolution();
+    if (!widget.challenge.requireSubmit) _checkResolution();
+  }
+
+  int get _nextTestCost => _testsUsed == 0 ? 0 : InterceptScoring.testCost;
+
+  /// Reveals the register's current value. Free the first time, then
+  /// [InterceptScoring.testCost] points each.
+  void _test() {
+    if (_resolved || _isPaused) return;
+    setState(() {
+      _pointsSpent += _nextTestCost;
+      _testsUsed++;
+      _testedBits = _current.bits;
+    });
+  }
+
+  /// Commits the answer. Right wins; wrong costs a move, and with none
+  /// left the round is lost.
+  void _submit() {
+    if (_resolved || _isPaused) return;
+    if (_current.bits == widget.challenge.targetBits) {
+      _finish(won: true);
+      return;
+    }
+    if (_movesRemaining <= 0) {
+      _finish(won: false);
+      return;
+    }
+    setState(() {
+      _movesRemaining--;
+      _submitNote = "That's not it. −1 move";
+    });
+  }
+
+  /// What the VALUE readout shows: the live value, or when hidden, the
+  /// last Test's result while the register still holds it.
+  String get _valueText {
+    if (!widget.challenge.hideValue) return '${_current.bits}';
+    return _testedBits == _current.bits ? '$_testedBits' : '?';
   }
 
   void _applyOperation(OperationType op) {
@@ -210,9 +263,13 @@ class _GameplayScreenState extends State<GameplayScreen> {
     if (outcome == null || _leaving) return;
     _leaving = true;
     if (widget.letter != null) {
-      Navigator.of(
-        context,
-      ).pop(LetterResult(cracked: outcome.won, spareMoves: _movesRemaining));
+      Navigator.of(context).pop(
+        LetterResult(
+          cracked: outcome.won,
+          spareMoves: _movesRemaining,
+          pointsSpent: _pointsSpent,
+        ),
+      );
       return;
     }
     await widget.services.ads.showInterstitial();
@@ -350,7 +407,9 @@ class _GameplayScreenState extends State<GameplayScreen> {
     if (leave == true) {
       _resolved = true;
       _clock?.cancel();
-      Navigator.of(context).pop(const LetterResult.abandoned());
+      Navigator.of(
+        context,
+      ).pop(LetterResult.abandoned(pointsSpent: _pointsSpent));
     } else if (!wasPaused) {
       _togglePause();
     }
@@ -720,7 +779,7 @@ class _GameplayScreenState extends State<GameplayScreen> {
                   TextSpan(
                     children: [
                       TextSpan(
-                        text: _numberMode ? '${_current.bits}' : '$matchCount',
+                        text: _numberMode ? _valueText : '$matchCount',
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.w700,
@@ -836,10 +895,19 @@ class _GameplayScreenState extends State<GameplayScreen> {
       children: [
         if (ops.isEmpty && widget.challenge.toggleable) ...[
           Text(
-            'Tap cells to switch them between 0 and 1',
-            style: TextStyle(fontSize: 15, color: p.textMuted),
+            _submitNote ??
+                (widget.challenge.requireSubmit
+                    ? 'Switch cells between 0 and 1, then Submit'
+                    : 'Tap cells to switch them between 0 and 1'),
+            style: TextStyle(
+              fontSize: 15,
+              color: _submitNote != null ? p.matchMiss : p.textMuted,
+              fontWeight: _submitNote != null ? FontWeight.w600 : null,
+            ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
+          if (widget.challenge.requireSubmit) _submitRow(p),
+          if (!widget.challenge.requireSubmit) const SizedBox(height: 8),
         ],
         if (_hasSwipe) ...[
           Text(
@@ -860,6 +928,67 @@ class _GameplayScreenState extends State<GameplayScreen> {
               ],
             ),
           ),
+      ],
+    );
+  }
+
+  Widget _submitRow(GameThemePalette p) {
+    const buttonText = TextStyle(
+      fontFamily: 'Sora',
+      fontSize: 17,
+      fontWeight: FontWeight.w600,
+    );
+    final shape = RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(16),
+    );
+    return Row(
+      children: [
+        if (widget.challenge.hideValue) ...[
+          Expanded(
+            child: SizedBox(
+              height: 64,
+              child: OutlinedButton(
+                onPressed: _test,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: p.textPrimary,
+                  side: BorderSide(color: p.textPrimary, width: 2),
+                  shape: shape,
+                  textStyle: buttonText,
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text('Test'),
+                    Text(
+                      _nextTestCost == 0 ? 'free' : '−$_nextTestCost pt',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: p.textMuted,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+        ],
+        Expanded(
+          child: SizedBox(
+            height: 64,
+            child: FilledButton(
+              onPressed: _submit,
+              style: FilledButton.styleFrom(
+                backgroundColor: p.buttonBg,
+                foregroundColor: p.buttonFg,
+                shape: shape,
+                textStyle: buttonText,
+              ),
+              child: const Text('Submit'),
+            ),
+          ),
+        ),
       ],
     );
   }

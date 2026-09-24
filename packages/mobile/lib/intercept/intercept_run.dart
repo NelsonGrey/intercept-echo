@@ -17,6 +17,10 @@ class InterceptScoring {
 
   /// Per distinct letter still hidden when the message is guessed.
   static const perGuessedLetter = 150;
+
+  /// Cost of each Test after the first in a letter puzzle (the first is
+  /// free).
+  static const testCost = 1;
 }
 
 /// The player's progress through the Intercept campaign: which
@@ -84,13 +88,20 @@ class InterceptRun extends ChangeNotifier {
     attempt: _attempts[letter] ?? 0,
   );
 
-  void recordCrack(String letter, {required int spareMoves}) {
+  void recordCrack(
+    String letter, {
+    required int spareMoves,
+    int pointsSpent = 0,
+  }) {
     if (_status != TransmissionStatus.playing || _revealed.contains(letter)) {
       return;
     }
     _revealed.add(letter);
+    // Net in one step, so Test costs are paid even from a score of 0.
     _award(
-      InterceptScoring.perLetter + InterceptScoring.perSpareMove * spareMoves,
+      InterceptScoring.perLetter +
+          InterceptScoring.perSpareMove * spareMoves -
+          pointsSpent,
     );
     if (hiddenLetters.isEmpty) _status = TransmissionStatus.decoded;
     _persist();
@@ -99,8 +110,9 @@ class InterceptRun extends ChangeNotifier {
 
   /// A failed or abandoned letter puzzle: lose a bar, and the next attempt
   /// at that letter gets a new puzzle.
-  void recordFailure(String letter) {
+  void recordFailure(String letter, {int pointsSpent = 0}) {
     if (_status != TransmissionStatus.playing) return;
+    _award(-pointsSpent);
     _attempts[letter] = (_attempts[letter] ?? 0) + 1;
     _loseBar();
     notifyListeners();
@@ -158,9 +170,10 @@ class InterceptRun extends ChangeNotifier {
     }
   }
 
+  /// Adds (or, for Test costs, subtracts) points. Scores never go below 0.
   void _award(int points) {
-    _transmissionScore += points;
-    _totalScore += points;
+    _transmissionScore = (_transmissionScore + points).clamp(0, 1 << 30);
+    _totalScore = (_totalScore + points).clamp(0, 1 << 30);
   }
 
   void _resetMessage() {
