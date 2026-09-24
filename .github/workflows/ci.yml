@@ -18,6 +18,15 @@ jobs:
         with:
           flutter-version: '3.47.5'
           channel: stable
+      # game-shell is a private git dependency; pub clones it over HTTPS,
+      # so point that one URL at a read-only token.
+      - name: Authenticate game-shell dependency
+        env:
+          GAME_SHELL_TOKEN: ${{ secrets.GAME_SHELL_TOKEN }}
+        run: >-
+          git config --global
+          url."https://x-access-token:${GAME_SHELL_TOKEN}@github.com/NelsonGrey/game-shell".insteadOf
+          "https://github.com/NelsonGrey/game-shell"
       - run: flutter pub get
       - run: flutter analyze
       - run: flutter test
