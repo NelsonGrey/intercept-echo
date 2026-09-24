@@ -1,5 +1,7 @@
 import 'package:game_shell/game_shell.dart';
 
+import '../theme/theme_controller.dart';
+
 /// Portfolio-standard game-shell services for this app, wired per the
 /// game-shell README's "Wiring order". Real AdMob IDs aren't provisioned
 /// yet (no Play Console / App Store Connect listing — see
@@ -10,7 +12,9 @@ class AppServices {
     ConsentService? consent,
     EntitlementService? entitlement,
     AdService? ads,
-  })  : consent = consent ?? UmpConsentService(),
+    ThemeController? theme,
+  })  : theme = theme ?? ThemeController(),
+        consent = consent ?? UmpConsentService(),
         entitlement =
             entitlement ?? IapEntitlementService(adRemovalProductId: 'ad_removal'),
         ads = ads ?? AdMobAdService(AdMobConfig.test());
@@ -19,12 +23,17 @@ class AppServices {
   final EntitlementService entitlement;
   final AdService ads;
 
+  /// The player's gameplay palette. Not a game-shell service — it lives
+  /// here so every screen reaches it the same way.
+  final ThemeController theme;
+
   bool _initialized = false;
 
   Future<void> initialize() async {
     if (_initialized) return;
     _initialized = true;
 
+    await theme.load();
     await consent.requestConsent();
     await entitlement.restore();
 

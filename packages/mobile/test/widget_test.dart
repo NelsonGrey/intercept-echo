@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:game_shell/game_shell.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shift_register_arcade/app/app_services.dart';
 import 'package:shift_register_arcade/main.dart';
+import 'package:shift_register_arcade/theme/game_theme.dart';
 
 // Real UMP/AdMob/IAP services need platform plugin channels a widget test
 // doesn't have, so every test here injects the Fake* services (matching
@@ -14,6 +16,8 @@ AppServices fakeServices() => AppServices(
     );
 
 void main() {
+  setUp(() => SharedPreferences.setMockInitialValues({}));
+
   testWidgets('boots to the home screen and shows the banner', (tester) async {
     await tester.pumpWidget(ShiftRegisterArcadeApp(services: fakeServices()));
     await tester.pumpAndSettle();
@@ -73,5 +77,45 @@ void main() {
 
     expect(find.text('Paused'), findsOneWidget);
     expect(find.byKey(const Key('fake_banner_ad')), findsOneWidget);
+  });
+
+  testWidgets('choosing a palette recolors gameplay and persists',
+      (tester) async {
+    final services = fakeServices();
+    await tester.pumpWidget(ShiftRegisterArcadeApp(services: services));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Appearance'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Arcade Neon'));
+    await tester.pumpAndSettle();
+
+    expect(services.theme.value, GameThemeId.arcadeNeon);
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getString('gameplay.theme'), 'arcadeNeon');
+
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Play'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('First Shift'));
+    await tester.pumpAndSettle();
+
+    final scaffold = tester.widget<Scaffold>(find.byType(Scaffold).first);
+    expect(scaffold.backgroundColor,
+        gameThemePalettes[GameThemeId.arcadeNeon]!.pageBg);
+  });
+
+  testWidgets('a saved palette loads on launch; an unknown one falls back',
+      (tester) async {
+    SharedPreferences.setMockInitialValues({'gameplay.theme': 'warmSunset'});
+    final services = fakeServices();
+    await tester.pumpWidget(ShiftRegisterArcadeApp(services: services));
+    await tester.pumpAndSettle();
+    expect(services.theme.value, GameThemeId.warmSunset);
+
+    SharedPreferences.setMockInitialValues({'gameplay.theme': 'retired'});
+    await services.theme.load();
+    expect(services.theme.value, defaultGameTheme);
   });
 }
