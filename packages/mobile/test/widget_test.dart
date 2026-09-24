@@ -54,8 +54,19 @@ void main() {
     await tester.tap(find.bySemanticsLabel('Cell worth 2, currently 0'));
     await tester.pumpAndSettle();
 
+    // The result shows in place first — no ad, no banner, still gameplay.
+    final ads = services.ads as FakeAdService;
     expect(find.text('Target Matched'), findsOneWidget);
-    expect((services.ads as FakeAdService).interstitialShownCount, 1);
+    expect(find.text('You made 2.'), findsOneWidget);
+    expect(ads.interstitialShownCount, 0);
+    expect(find.byKey(const Key('fake_banner_ad')), findsNothing);
+
+    // Continue is the round exit: now the interstitial, then results.
+    await tester.tap(find.text('Continue'));
+    await tester.pumpAndSettle();
+    expect(find.text('Target Matched'), findsOneWidget);
+    expect(find.text('Next'), findsOneWidget);
+    expect(ads.interstitialShownCount, 1);
     // Round-exit interstitial fired, but the results screen's own banner
     // should still be showing.
     expect(find.byKey(const Key('fake_banner_ad')), findsOneWidget);
@@ -145,7 +156,15 @@ void main() {
       await tester.pump(tick);
       await tester.pumpAndSettle();
       expect(find.text('Out of Time'), findsOneWidget);
-      expect((services.ads as FakeAdService).interstitialShownCount, 1);
+      expect(find.text('The register is 0. The target was 3.'), findsOneWidget);
+      final ads = services.ads as FakeAdService;
+      expect(ads.interstitialShownCount, 0);
+
+      await tester.tap(find.text('Continue'));
+      await tester.pumpAndSettle();
+      expect(ads.interstitialShownCount, 1);
+      expect(find.text('Out of Time'), findsOneWidget);
+      expect(find.text('Next'), findsNothing);
     });
 
     testWidgets('pausing stops the clock', (tester) async {
@@ -222,5 +241,44 @@ void main() {
       final prefs = await SharedPreferences.getInstance();
       expect(prefs.getBool('accessibility.relaxedClock'), isTrue);
     });
+  });
+
+  testWidgets('input stops once the round is over', (tester) async {
+    final services = fakeServices();
+    await tester.pumpWidget(ShiftRegisterArcadeApp(services: services));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Play'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Make 2'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.bySemanticsLabel('Cell worth 2, currently 0'));
+    await tester.pumpAndSettle();
+    // The cell reads 1 now; tapping it again must not undo the win.
+    await tester.tap(find.bySemanticsLabel('Cell worth 2, currently 1'),
+        warnIfMissed: false);
+    await tester.pumpAndSettle();
+    expect(find.bySemanticsLabel('Cell worth 2, currently 1'), findsOneWidget);
+    expect(find.text('Target Matched'), findsOneWidget);
+  });
+
+  testWidgets('Next after a win opens the following challenge',
+      (tester) async {
+    final services = fakeServices();
+    await tester.pumpWidget(ShiftRegisterArcadeApp(services: services));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Play'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Make 2'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.bySemanticsLabel('Cell worth 2, currently 0'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Continue'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Next'));
+    await tester.pumpAndSettle();
+    expect(find.text('Make 1'), findsOneWidget);
+    expect(find.text('COUNT · 2 OF 10'), findsOneWidget);
   });
 }

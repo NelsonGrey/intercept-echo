@@ -30,7 +30,11 @@ import 'results_screen.dart';
 /// The interstitial is fired once, right before navigating to
 /// [ResultsScreen] on win or fail — never before the round starts.
 class GameplayScreen extends StatefulWidget {
-  const GameplayScreen({super.key, required this.services, required this.challenge});
+  const GameplayScreen({
+    super.key,
+    required this.services,
+    required this.challenge,
+  });
 
   final AppServices services;
   final Challenge challenge;
@@ -44,6 +48,12 @@ class _GameplayScreenState extends State<GameplayScreen> {
   late int _movesRemaining;
   bool _isPaused = false;
   bool _resolved = false;
+
+  /// Set when the round ends; drives the in-place result card. The
+  /// interstitial waits until the player taps Continue, so they always see
+  /// how the round went first.
+  _Outcome? _outcome;
+  bool _leaving = false;
 
   /// 1-bits pushed off either end (BR-003's overflow resource). Counted and
   /// shown, but not yet spendable — the Overclock chapter adds that.
@@ -80,10 +90,14 @@ class _GameplayScreenState extends State<GameplayScreen> {
   /// Starts (or, after a pause, restarts) the tick timer. A tick in
   /// progress when the player paused starts over on resume.
   void _startClock() {
-    final multiplier =
-        widget.services.relaxedClock.value ? relaxedClockMultiplier : 1;
+    final multiplier = widget.services.relaxedClock.value
+        ? relaxedClockMultiplier
+        : 1;
     _clock?.cancel();
-    _clock = Timer.periodic(widget.challenge.tickDuration * multiplier, (_) => _onTick());
+    _clock = Timer.periodic(
+      widget.challenge.tickDuration * multiplier,
+      (_) => _onTick(),
+    );
   }
 
   void _onTick() {
@@ -156,11 +170,13 @@ class _GameplayScreenState extends State<GameplayScreen> {
     }
   }
 
-  bool get _hasSwipe => widget.challenge.allowedOperations.any((op) =>
-      op == OperationType.shiftLeft ||
-      op == OperationType.shiftRight ||
-      op == OperationType.rotateLeft ||
-      op == OperationType.rotateRight);
+  bool get _hasSwipe => widget.challenge.allowedOperations.any(
+    (op) =>
+        op == OperationType.shiftLeft ||
+        op == OperationType.shiftRight ||
+        op == OperationType.rotateLeft ||
+        op == OperationType.rotateRight,
+  );
 
   void _checkResolution() {
     final target = widget.challenge.targetBits;
@@ -171,26 +187,34 @@ class _GameplayScreenState extends State<GameplayScreen> {
     }
   }
 
-  Future<void> _finish({required bool won, bool timedOut = false}) async {
+  void _finish({required bool won, bool timedOut = false}) {
     if (_resolved) return;
     _resolved = true;
     _clock?.cancel();
-    final movesUsed = widget.challenge.moveBudget - _movesRemaining;
+    setState(() => _outcome = _Outcome(won: won, timedOut: timedOut));
+  }
 
-    // Round-exit: exactly one interstitial, on the way to a non-gameplay
-    // screen, never gating the round that just ended.
+  /// Leaves the finished round. Round-exit: exactly one interstitial, on
+  /// the way to a non-gameplay screen, after the player has seen the
+  /// result — never gating a round's start.
+  Future<void> _continue() async {
+    final outcome = _outcome;
+    if (outcome == null || _leaving) return;
+    _leaving = true;
     await widget.services.ads.showInterstitial();
 
     if (!mounted) return;
-    Navigator.of(context).pushReplacement(MaterialPageRoute(
-      builder: (_) => ResultsScreen(
-        services: widget.services,
-        challenge: widget.challenge,
-        won: won,
-        movesUsed: movesUsed,
-        timedOut: timedOut,
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (_) => ResultsScreen(
+          services: widget.services,
+          challenge: widget.challenge,
+          won: outcome.won,
+          movesUsed: widget.challenge.moveBudget - _movesRemaining,
+          timedOut: outcome.timedOut,
+        ),
       ),
-    ));
+    );
   }
 
   /// "Move · 3 of 4": this challenge's position within its chapter.
@@ -227,13 +251,27 @@ class _GameplayScreenState extends State<GameplayScreen> {
                     Expanded(
                       child: _isPaused
                           ? Center(
-                              child: Text('Paused',
-                                  style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w700,
-                                      color: p.textPrimary)),
+                              child: Text(
+                                'Paused',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w700,
+                                  color: p.textPrimary,
+                                ),
+                              ),
                             )
-                          : _board(p),
+                          : Stack(
+                              children: [
+                                _board(p),
+                                if (_outcome != null)
+                                  Positioned(
+                                    left: 0,
+                                    right: 0,
+                                    bottom: 0,
+                                    child: _resultCard(p, _outcome!),
+                                  ),
+                              ],
+                            ),
                     ),
                   ],
                 ),
@@ -242,6 +280,107 @@ class _GameplayScreenState extends State<GameplayScreen> {
           ),
         );
       },
+    );
+  }
+
+  Widget _resultCard(GameThemePalette p, _Outcome outcome) {
+    final c = widget.challenge;
+    final target = c.targetBits;
+    final value = _current.bits;
+    final title = outcome.won
+        ? 'Target Matched'
+        : (outcome.timedOut ? 'Out of Time' : 'Out of Moves');
+    final String detail;
+    if (c.targetStyle == TargetStyle.number) {
+      detail = outcome.won
+          ? 'You made $target.'
+          : 'The register is $value. The target was $target.';
+    } else {
+      final matching = List.generate(
+        8,
+        (i) => _current.bitAt(i) == (((target >> i) & 1) == 1),
+      ).where((m) => m).length;
+      detail = outcome.won
+          ? 'Pattern matched.'
+          : '$matching of 8 bits matched the target.';
+    }
+    final used = c.moveBudget - _movesRemaining;
+
+    return Semantics(
+      liveRegion: true,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+        decoration: BoxDecoration(
+          color: p.pageBg,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: p.bitOffBorder, width: 1.5),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x33000000),
+              blurRadius: 24,
+              offset: Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  outcome.won
+                      ? Icons.check_circle
+                      : (outcome.timedOut ? Icons.timer_off : Icons.block),
+                  color: outcome.won ? p.matchHit : p.matchMiss,
+                  size: 28,
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w700,
+                    color: p.textPrimary,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              detail,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 16, color: p.textPrimary),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              '$used of ${c.moveBudget} moves used',
+              style: TextStyle(fontSize: 14, color: p.textMuted),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: FilledButton(
+                onPressed: _continue,
+                style: FilledButton.styleFrom(
+                  backgroundColor: p.buttonBg,
+                  foregroundColor: p.buttonFg,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  textStyle: const TextStyle(
+                    fontFamily: 'Sora',
+                    fontSize: 17,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                child: const Text('Continue'),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -259,23 +398,34 @@ class _GameplayScreenState extends State<GameplayScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(_chapterPosition.toUpperCase(),
-                    style: _label(p.textMuted, size: 12)),
+                Text(
+                  _chapterPosition.toUpperCase(),
+                  style: _label(p.textMuted, size: 12),
+                ),
                 const SizedBox(height: 2),
-                Text(widget.challenge.title,
-                    style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: p.textPrimary)),
+                Text(
+                  widget.challenge.title,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: p.textPrimary,
+                  ),
+                ),
               ],
             ),
           ),
-          IconButton(
-            tooltip: _isPaused ? 'Resume' : 'Pause',
-            icon: Icon(_isPaused ? Icons.play_arrow : Icons.pause,
-                color: p.textPrimary),
-            onPressed: _togglePause,
-          ),
+          if (_resolved)
+            // Nothing to pause once the round is over.
+            const SizedBox(width: 48)
+          else
+            IconButton(
+              tooltip: _isPaused ? 'Resume' : 'Pause',
+              icon: Icon(
+                _isPaused ? Icons.play_arrow : Icons.pause,
+                color: p.textPrimary,
+              ),
+              onPressed: _togglePause,
+            ),
         ],
       ),
     );
@@ -283,8 +433,10 @@ class _GameplayScreenState extends State<GameplayScreen> {
 
   Widget _board(GameThemePalette p) {
     final target = widget.challenge.targetBits;
-    final matches =
-        List.generate(8, (i) => _current.bitAt(7 - i) == (((target >> (7 - i)) & 1) == 1));
+    final matches = List.generate(
+      8,
+      (i) => _current.bitAt(7 - i) == (((target >> (7 - i)) & 1) == 1),
+    );
     final matchCount = matches.where((m) => m).length;
     final toggleable = widget.challenge.toggleable;
 
@@ -303,40 +455,57 @@ class _GameplayScreenState extends State<GameplayScreen> {
                 if (_numberMode) ...[
                   // A number target: per-bit marks would give the answer
                   // away, so only the number is shown.
-                  _inset(Text('MAKE THIS NUMBER',
-                      style: _label(p.textMuted, size: 12))),
+                  _inset(
+                    Text(
+                      'MAKE THIS NUMBER',
+                      style: _label(p.textMuted, size: 12),
+                    ),
+                  ),
                   const SizedBox(height: 4),
                   Center(
                     child: Semantics(
                       label: 'Target number $target',
                       excludeSemantics: true,
-                      child: Text('$target',
-                          style: TextStyle(
-                              fontSize: 72,
-                              height: 1.1,
-                              fontWeight: FontWeight.w700,
-                              color: p.textPrimary)),
+                      child: Text(
+                        '$target',
+                        style: TextStyle(
+                          fontSize: 72,
+                          height: 1.1,
+                          fontWeight: FontWeight.w700,
+                          color: p.textPrimary,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 20),
                 ] else ...[
                   _inset(Text('TARGET', style: _label(p.textMuted, size: 12))),
                   const SizedBox(height: 10),
-                  _inset(Semantics(
-                    label: 'Target ${RegisterState(target)}',
-                    excludeSemantics: true,
-                    child: _cellRow((i) => _BitCell.target(
-                        on: ((target >> (7 - i)) & 1) == 1, palette: p)),
-                  )),
+                  _inset(
+                    Semantics(
+                      label: 'Target ${RegisterState(target)}',
+                      excludeSemantics: true,
+                      child: _cellRow(
+                        (i) => _BitCell.target(
+                          on: ((target >> (7 - i)) & 1) == 1,
+                          palette: p,
+                        ),
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 10),
-                  _inset(SizedBox(
-                    height: 22,
-                    child: _cellRow((i) => Icon(
+                  _inset(
+                    SizedBox(
+                      height: 22,
+                      child: _cellRow(
+                        (i) => Icon(
                           matches[i] ? Icons.check : Icons.close,
                           size: 18,
                           color: matches[i] ? p.matchHit : p.matchMiss,
-                        )),
-                  )),
+                        ),
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 10),
                 ],
                 Row(
@@ -350,7 +519,8 @@ class _GameplayScreenState extends State<GameplayScreen> {
                               final on = _current.bitAt(index);
                               return Semantics(
                                 button: true,
-                                label: 'Cell worth ${1 << index}, '
+                                label:
+                                    'Cell worth ${1 << index}, '
                                     'currently ${on ? 1 : 0}',
                                 excludeSemantics: true,
                                 child: GestureDetector(
@@ -364,8 +534,12 @@ class _GameplayScreenState extends State<GameplayScreen> {
                                   ? 'Register ${_current.bits}'
                                   : 'Register $_current, $matchCount of 8 bits match',
                               excludeSemantics: true,
-                              child: _cellRow((i) => _BitCell.register(
-                                  on: _current.bitAt(7 - i), palette: p)),
+                              child: _cellRow(
+                                (i) => _BitCell.register(
+                                  on: _current.bitAt(7 - i),
+                                  palette: p,
+                                ),
+                              ),
                             ),
                     ),
                     const SizedBox(width: 4),
@@ -376,11 +550,18 @@ class _GameplayScreenState extends State<GameplayScreen> {
                   const SizedBox(height: 6),
                   // Place values, so players learn what each cell adds.
                   ExcludeSemantics(
-                    child: _inset(_cellRow((i) => Text('${1 << (7 - i)}',
-                        style: TextStyle(
+                    child: _inset(
+                      _cellRow(
+                        (i) => Text(
+                          '${1 << (7 - i)}',
+                          style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
-                            color: p.textMuted)))),
+                            color: p.textMuted,
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 ],
                 const SizedBox(height: 10),
@@ -395,8 +576,10 @@ class _GameplayScreenState extends State<GameplayScreen> {
   }
 
   /// Lines content up with the register's columns, inside the gutters.
-  Widget _inset(Widget child) =>
-      Padding(padding: const EdgeInsets.symmetric(horizontal: 28), child: child);
+  Widget _inset(Widget child) => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 28),
+    child: child,
+  );
 
   Widget _cellRow(Widget Function(int i) cell) {
     return Row(
@@ -427,20 +610,30 @@ class _GameplayScreenState extends State<GameplayScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(_numberMode ? 'VALUE' : 'MATCH', style: _label(p.textMuted)),
+                Text(
+                  _numberMode ? 'VALUE' : 'MATCH',
+                  style: _label(p.textMuted),
+                ),
                 const SizedBox(height: 4),
-                Text.rich(TextSpan(children: [
+                Text.rich(
                   TextSpan(
-                      text: _numberMode ? '${_current.bits}' : '$matchCount',
-                      style: TextStyle(
+                    children: [
+                      TextSpan(
+                        text: _numberMode ? '${_current.bits}' : '$matchCount',
+                        style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.w700,
-                          color: p.textPrimary)),
-                  if (!_numberMode)
-                    TextSpan(
-                        text: ' / 8',
-                        style: TextStyle(fontSize: 14, color: p.textMuted)),
-                ])),
+                          color: p.textPrimary,
+                        ),
+                      ),
+                      if (!_numberMode)
+                        TextSpan(
+                          text: ' / 8',
+                          style: TextStyle(fontSize: 14, color: p.textMuted),
+                        ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
@@ -468,18 +661,23 @@ class _GameplayScreenState extends State<GameplayScreen> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text('$_movesRemaining',
-                          style: TextStyle(
-                              fontSize: 32,
-                              height: 1,
-                              fontWeight: FontWeight.w700,
-                              color: p.textPrimary)),
+                      Text(
+                        '$_movesRemaining',
+                        style: TextStyle(
+                          fontSize: 32,
+                          height: 1,
+                          fontWeight: FontWeight.w700,
+                          color: p.textPrimary,
+                        ),
+                      ),
                       SizedBox(
                         width: 68,
                         child: FittedBox(
                           fit: BoxFit.scaleDown,
-                          child: Text('OF $budget MOVES',
-                              style: _label(p.textMuted)),
+                          child: Text(
+                            'OF $budget MOVES',
+                            style: _label(p.textMuted),
+                          ),
                         ),
                       ),
                     ],
@@ -505,9 +703,10 @@ class _GameplayScreenState extends State<GameplayScreen> {
                         Padding(
                           padding: EdgeInsets.only(left: i == 0 ? 0 : 4),
                           child: _Pip(
-                              filled: i < filledPips,
-                              color: p.overflowAccent,
-                              size: 14),
+                            filled: i < filledPips,
+                            color: p.overflowAccent,
+                            size: 14,
+                          ),
                         ),
                     ],
                   ),
@@ -523,18 +722,23 @@ class _GameplayScreenState extends State<GameplayScreen> {
   Widget _controls(GameThemePalette p) {
     final ops = widget.challenge.allowedOperations;
     final rows = <List<OperationType>>[
-      for (var i = 0; i < ops.length; i += 2) ops.sublist(i, math.min(i + 2, ops.length)),
+      for (var i = 0; i < ops.length; i += 2)
+        ops.sublist(i, math.min(i + 2, ops.length)),
     ];
     return Column(
       children: [
         if (ops.isEmpty && widget.challenge.toggleable) ...[
-          Text('Tap cells to switch them between 0 and 1',
-              style: TextStyle(fontSize: 15, color: p.textMuted)),
+          Text(
+            'Tap cells to switch them between 0 and 1',
+            style: TextStyle(fontSize: 15, color: p.textMuted),
+          ),
           const SizedBox(height: 24),
         ],
         if (_hasSwipe) ...[
-          Text('or swipe the register left or right',
-              style: TextStyle(fontSize: 13, color: p.textMuted)),
+          Text(
+            'or swipe the register left or right',
+            style: TextStyle(fontSize: 13, color: p.textMuted),
+          ),
           const SizedBox(height: 10),
         ],
         for (final row in rows)
@@ -571,9 +775,14 @@ class _GameplayScreenState extends State<GameplayScreen> {
         style: FilledButton.styleFrom(
           backgroundColor: p.buttonBg,
           foregroundColor: p.buttonFg,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           textStyle: const TextStyle(
-              fontFamily: 'Sora', fontSize: 17, fontWeight: FontWeight.w600),
+            fontFamily: 'Sora',
+            fontSize: 17,
+            fontWeight: FontWeight.w600,
+          ),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -588,20 +797,20 @@ class _GameplayScreenState extends State<GameplayScreen> {
   }
 
   TextStyle _label(Color color, {double size = 11}) => TextStyle(
-        fontSize: size,
-        fontWeight: FontWeight.w600,
-        letterSpacing: size >= 12 ? 1.2 : 1,
-        color: color,
-      );
+    fontSize: size,
+    fontWeight: FontWeight.w600,
+    letterSpacing: size >= 12 ? 1.2 : 1,
+    color: color,
+  );
 }
 
 /// One bit. A 1 is a solid, raised cell; a 0 is an outlined cell — shape
 /// and digit both carry the value, not color alone (SRA-BR-013).
 class _BitCell extends StatelessWidget {
   const _BitCell.target({required this.on, required this.palette})
-      : isTarget = true;
+    : isTarget = true;
   const _BitCell.register({required this.on, required this.palette})
-      : isTarget = false;
+    : isTarget = false;
 
   final bool on;
   final bool isTarget;
@@ -668,7 +877,10 @@ class _DashedBox extends StatelessWidget {
   Widget build(BuildContext context) {
     return CustomPaint(
       painter: _DashedBorderPainter(color: color, radius: radius, fill: fill),
-      child: SizedBox(height: height, child: Center(child: child)),
+      child: SizedBox(
+        height: height,
+        child: Center(child: child),
+      ),
     );
   }
 }
@@ -683,7 +895,9 @@ class _DashedBorderPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final rrect = RRect.fromRectAndRadius(
-        (Offset.zero & size).deflate(1), Radius.circular(radius));
+      (Offset.zero & size).deflate(1),
+      Radius.circular(radius),
+    );
     if (fill != null) {
       canvas.drawRRect(rrect, Paint()..color = fill!);
     }
@@ -693,7 +907,10 @@ class _DashedBorderPainter extends CustomPainter {
       ..strokeWidth = 2;
     for (final metric in (Path()..addRRect(rrect)).computeMetrics()) {
       for (double d = 0; d < metric.length; d += 8) {
-        canvas.drawPath(metric.extractPath(d, math.min(d + 4, metric.length)), stroke);
+        canvas.drawPath(
+          metric.extractPath(d, math.min(d + 4, metric.length)),
+          stroke,
+        );
       }
     }
   }
@@ -707,7 +924,11 @@ class _DashedBorderPainter extends CustomPainter {
 /// that side — a filled pip for a 1 (it charged overflow), an outlined pip
 /// for a 0, nothing before the first spill.
 class _Gutter extends StatelessWidget {
-  const _Gutter({required this.spilled, required this.left, required this.palette});
+  const _Gutter({
+    required this.spilled,
+    required this.left,
+    required this.palette,
+  });
 
   final int? spilled;
   final bool left;
@@ -757,7 +978,11 @@ class _Pip extends StatelessWidget {
 }
 
 class _RingPainter extends CustomPainter {
-  _RingPainter({required this.progress, required this.track, required this.fill});
+  _RingPainter({
+    required this.progress,
+    required this.track,
+    required this.fill,
+  });
 
   final double progress;
   final Color track;
@@ -788,4 +1013,11 @@ class _RingPainter extends CustomPainter {
   @override
   bool shouldRepaint(_RingPainter old) =>
       old.progress != progress || old.track != track || old.fill != fill;
+}
+
+class _Outcome {
+  const _Outcome({required this.won, required this.timedOut});
+
+  final bool won;
+  final bool timedOut;
 }

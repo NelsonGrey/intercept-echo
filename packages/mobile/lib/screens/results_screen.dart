@@ -3,6 +3,7 @@ import 'package:game_shell/game_shell.dart';
 
 import '../app/app_services.dart';
 import '../content/challenge.dart';
+import '../content/challenge_repository.dart';
 import 'gameplay_screen.dart';
 
 /// Reached only on the way *out* of a round (win or fail) — this is the
@@ -29,8 +30,22 @@ class ResultsScreen extends StatelessWidget {
   /// The round clock ran out (as opposed to the move budget).
   final bool timedOut;
 
+  /// The challenge after this one in the list, or null at the end.
+  Challenge? get _next {
+    final all = ChallengeRepository.all;
+    final i = all.indexWhere((c) => c.id == challenge.id);
+    return i >= 0 && i + 1 < all.length ? all[i + 1] : null;
+  }
+
+  void _play(BuildContext context, Challenge c) {
+    Navigator.of(context).pushReplacement(MaterialPageRoute(
+      builder: (_) => GameplayScreen(services: services, challenge: c),
+    ));
+  }
+
   @override
   Widget build(BuildContext context) {
+    final next = _next;
     return Scaffold(
       body: GameScreenShell(
         adService: services.ads,
@@ -60,17 +75,17 @@ class ResultsScreen extends StatelessWidget {
                     child: const Text('Menu'),
                   ),
                   const SizedBox(width: 16),
-                  FilledButton(
-                    onPressed: () {
-                      Navigator.of(context).pushReplacement(MaterialPageRoute(
-                        builder: (_) => GameplayScreen(
-                          services: services,
-                          challenge: challenge,
-                        ),
-                      ));
-                    },
+                  (won && next != null ? OutlinedButton.new : FilledButton.new)(
+                    onPressed: () => _play(context, challenge),
                     child: const Text('Retry'),
                   ),
+                  if (won && next != null) ...[
+                    const SizedBox(width: 16),
+                    FilledButton(
+                      onPressed: () => _play(context, next),
+                      child: const Text('Next'),
+                    ),
+                  ],
                 ],
               ),
             ],
