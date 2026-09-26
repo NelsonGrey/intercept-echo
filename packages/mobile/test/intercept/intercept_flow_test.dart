@@ -48,7 +48,7 @@ void main() {
     tester,
   ) async {
     await openBoard(tester);
-    expect(find.text('TRANSMISSION 1 OF 12'), findsOneWidget);
+    expect(find.text('TRANSMISSION 1 OF 50'), findsOneWidget);
     expect(find.text('Crack next letter'), findsOneWidget);
     expect(find.byKey(const Key('fake_banner_ad')), findsOneWidget);
   });
@@ -79,7 +79,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(services.intercept.revealed, {'S'});
     expect((services.ads as FakeAdService).interstitialShownCount, 0);
-    expect(find.text('TRANSMISSION 1 OF 12'), findsOneWidget);
+    expect(find.text('TRANSMISSION 1 OF 50'), findsOneWidget);
   });
 
   testWidgets('leaving a letter early costs a signal bar', (tester) async {
@@ -122,7 +122,7 @@ void main() {
 
     await tester.tap(find.text('Next transmission'));
     await tester.pumpAndSettle();
-    expect(find.text('TRANSMISSION 2 OF 12'), findsOneWidget);
+    expect(find.text('TRANSMISSION 2 OF 50'), findsOneWidget);
     expect(ads.interstitialShownCount, 1);
   });
 
@@ -165,7 +165,7 @@ void main() {
     // Transmission 4, "KEY HAS CHANGED": key 3, Count puzzles.
     SharedPreferences.setMockInitialValues({'intercept.index': 3});
     final services = await openBoard(tester);
-    expect(find.text('TRANSMISSION 4 OF 12'), findsOneWidget);
+    expect(find.text('TRANSMISSION 4 OF 50'), findsOneWidget);
     await tester.tap(find.text('Crack next letter'));
     await tester.pumpAndSettle();
 

@@ -56,12 +56,16 @@ class Transmission {
   }
 }
 
-/// The prototype campaign. Phrases are original to this game
-/// (SRA-BR-009). Transmission 4 tells the player the key has changed —
-/// from there each message uses its own shifted alphabet. Transmissions
-/// 6–8 give three messages of Shift practice inside `mixed` before Rotate
-/// is introduced; from transmission 9 on, `advanced` swaps `mixed`'s Shift
-/// half for Rotate + Shift, and scores a bonus for using it.
+/// The campaign. Phrases are original to this game (SRA-BR-009).
+/// Transmission 4 tells the player the key has changed — from there each
+/// message uses its own shifted alphabet. Transmissions 6–8 give three
+/// messages of Shift practice inside `mixed` before Rotate is introduced;
+/// from transmission 9 on, `advanced` swaps `mixed`'s Shift half for
+/// Rotate + Shift, and scores a bonus for using it. `advanced` is the
+/// campaign's top difficulty tier — SRA-BR-005's "real difficulty curve"
+/// is carried from there by longer phrases and fresh keys, not a new
+/// puzzle kind, so transmissions 12+ stay `advanced` through the end of
+/// the 50-transmission set.
 const List<Transmission> transmissions = [
   Transmission(
     phrase: 'SIGNAL FOUND',
@@ -82,6 +86,164 @@ const List<Transmission> transmissions = [
   Transmission(
     phrase: 'WE ARE ALMOST HOME',
     key: 23,
+    kind: PuzzleKind.advanced,
+  ),
+  Transmission(phrase: 'EYES ON THE TARGET', key: 5, kind: PuzzleKind.advanced),
+  Transmission(phrase: 'HOLD YOUR POSITION', key: 9, kind: PuzzleKind.advanced),
+  Transmission(
+    phrase: 'ENEMY CONVOY SPOTTED',
+    key: 13,
+    kind: PuzzleKind.advanced,
+  ),
+  Transmission(
+    phrase: 'WEATHER IS CLEARING',
+    key: 17,
+    kind: PuzzleKind.advanced,
+  ),
+  Transmission(
+    phrase: 'AWAITING FURTHER ORDERS',
+    key: 21,
+    kind: PuzzleKind.advanced,
+  ),
+  Transmission(
+    phrase: 'BRIDGE IS COMPROMISED',
+    key: 25,
+    kind: PuzzleKind.advanced,
+  ),
+  Transmission(phrase: 'FALL BACK TO BASE', key: 2, kind: PuzzleKind.advanced),
+  Transmission(phrase: 'PACKAGE IS SECURE', key: 6, kind: PuzzleKind.advanced),
+  Transmission(
+    phrase: 'RADIO SILENCE BROKEN',
+    key: 10,
+    kind: PuzzleKind.advanced,
+  ),
+  Transmission(
+    phrase: 'NEW COORDINATES SENT',
+    key: 14,
+    kind: PuzzleKind.advanced,
+  ),
+  Transmission(
+    phrase: 'STORM APPROACHING FAST',
+    key: 18,
+    kind: PuzzleKind.advanced,
+  ),
+  Transmission(phrase: 'AGENT WENT DARK', key: 22, kind: PuzzleKind.advanced),
+  Transmission(
+    phrase: 'SIGNAL IS WEAKENING',
+    key: 1,
+    kind: PuzzleKind.advanced,
+  ),
+  Transmission(
+    phrase: 'HOLD THIS FREQUENCY',
+    key: 4,
+    kind: PuzzleKind.advanced,
+  ),
+  Transmission(
+    phrase: 'MISSION IS COMPROMISED',
+    key: 8,
+    kind: PuzzleKind.advanced,
+  ),
+  Transmission(
+    phrase: 'EXTRACTION POINT READY',
+    key: 12,
+    kind: PuzzleKind.advanced,
+  ),
+  Transmission(phrase: 'DO NOT ENGAGE YET', key: 16, kind: PuzzleKind.advanced),
+  Transmission(
+    phrase: 'BACKUP IS ARRIVING',
+    key: 20,
+    kind: PuzzleKind.advanced,
+  ),
+  Transmission(
+    phrase: 'THE CIPHER HAS CHANGED',
+    key: 24,
+    kind: PuzzleKind.advanced,
+  ),
+  Transmission(
+    phrase: 'KEEP THIS CHANNEL OPEN',
+    key: 3,
+    kind: PuzzleKind.advanced,
+  ),
+  Transmission(
+    phrase: 'NIGHT WATCH BEGINS NOW',
+    key: 7,
+    kind: PuzzleKind.advanced,
+  ),
+  Transmission(
+    phrase: 'CONTACT LOST AT DAWN',
+    key: 11,
+    kind: PuzzleKind.advanced,
+  ),
+  Transmission(phrase: 'THE BRIDGE IS DOWN', key: 15, kind: PuzzleKind.advanced),
+  Transmission(
+    phrase: 'HOLD THE PERIMETER',
+    key: 19,
+    kind: PuzzleKind.advanced,
+  ),
+  Transmission(
+    phrase: 'SUPPLIES ARE RUNNING LOW',
+    key: 23,
+    kind: PuzzleKind.advanced,
+  ),
+  Transmission(
+    phrase: 'THE SAFE HOUSE MOVED',
+    key: 2,
+    kind: PuzzleKind.advanced,
+  ),
+  Transmission(
+    phrase: 'TRUST THE NEXT VOICE',
+    key: 6,
+    kind: PuzzleKind.advanced,
+  ),
+  Transmission(
+    phrase: 'DECODE AND STAND BY',
+    key: 10,
+    kind: PuzzleKind.advanced,
+  ),
+  Transmission(
+    phrase: 'THE BORDER IS CLOSED',
+    key: 14,
+    kind: PuzzleKind.advanced,
+  ),
+  Transmission(
+    phrase: 'FRIENDLY FORCES NEARBY',
+    key: 18,
+    kind: PuzzleKind.advanced,
+  ),
+  Transmission(
+    phrase: 'HOSTILE SHIPS SIGHTED',
+    key: 22,
+    kind: PuzzleKind.advanced,
+  ),
+  Transmission(
+    phrase: 'THE OLD CODE RETURNS',
+    key: 1,
+    kind: PuzzleKind.advanced,
+  ),
+  Transmission(phrase: 'KEEP MOVING NORTH', key: 5, kind: PuzzleKind.advanced),
+  Transmission(
+    phrase: 'THIS IS THE LAST RELAY',
+    key: 9,
+    kind: PuzzleKind.advanced,
+  ),
+  Transmission(
+    phrase: 'THE NETWORK IS SECURE',
+    key: 13,
+    kind: PuzzleKind.advanced,
+  ),
+  Transmission(
+    phrase: 'ONE FINAL TRANSMISSION',
+    key: 17,
+    kind: PuzzleKind.advanced,
+  ),
+  Transmission(
+    phrase: 'YOU ARE NOW COMMAND',
+    key: 21,
+    kind: PuzzleKind.advanced,
+  ),
+  Transmission(
+    phrase: 'SIGNAL COMPLETE OUT',
+    key: 25,
     kind: PuzzleKind.advanced,
   ),
 ];
