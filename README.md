@@ -10,14 +10,32 @@ Related docs: [Business Requirements](./docs/BUSINESS_REQUIREMENTS.md) ·
 
 ## Status
 
-First playable vertical slice: the register domain engine (`lib/domain/`,
-exhaustively tested over all 256 byte values), 7 hand-authored challenges
-across the Move/Preserve/Transform chapters (`lib/content/` — not the full
-40 SRA-BR-005 calls for yet), and Home/Select/Gameplay/Results screens
-wired to `game-shell`'s ad/consent/entitlement services. Verified both with
-`flutter test` and by actually running on an iOS Simulator with the real
+The core loop is **Intercept**: register puzzles crack the letters of a
+hangman-style coded message, one campaign transmission at a time (no level
+list to pick from — see `lib/intercept/`). 12 authored transmissions escalate
+from Count (tap cells to a target number) through Shift (reach it by
+doubling/halving) to Rotate + Shift once a player has had practice with
+Shift alone. Cracking or losing a letter costs/awards signal bars and
+points; guessing the whole message early banks a bonus. A `lib/content/`
+"Practice" mode with the original Move/Preserve/Transform-style challenges
+still exists for ad hoc testing, but Intercept is the game.
+
+Three difficulty levels (Easy/Normal/Hard) trade how many of the register's
+place values are shown for a score multiplier. The one-time "Remove Ads"
+purchase ($2.99, matching Modulo Squares) is wired end-to-end — entitlement,
+ads, and a Settings screen button — pending only the store-side product
+creation (see `docs/STORE_SETUP.md`). Settings also links out to the game's
+Privacy/Terms/Support pages, hosted on the Nelson Grey site (see below).
+
+Verified both with `flutter test` (register engine exhaustively tested over
+all 256 byte values; every Intercept puzzle machine-checked solvable within
+its move budget) and by actually running on an iOS Simulator with the real
 AdMob service — that live run caught a real crash (see `game-shell`'s
 history) that the fakes-only unit tests couldn't have found.
+
+**Not built yet:** the endless score mode and per-platform leaderboard
+submission BUSINESS_REQUIREMENTS.md calls for, and gameplay analytics
+(SRA-BR-012).
 
 ## Layout
 
@@ -37,6 +55,13 @@ Bundle/package ID base: `com.shiftregisterarcade`
 Google Play Console and Apple App Store Connect have no public API for
 **creating a brand-new app listing** — that first step has to happen in
 each console's UI. See `docs/STORE_SETUP.md` for the exact values to enter.
+
+## Legal/support pages
+
+This project has no marketing site of its own (unlike Modulo Squares, which
+has a separate site/repo/domain). Privacy/Terms/Support live on the Nelson
+Grey site instead, under `games/shift-register-arcade/` in the
+`nelson-grey` repo — see `docs/STORE_SETUP.md` for the URLs.
 
 ## Getting started
 

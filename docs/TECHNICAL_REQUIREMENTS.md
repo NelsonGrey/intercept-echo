@@ -1,9 +1,9 @@
 # Shift-Register Arcade — Technical Requirements
 
 **Document type:** Technical Requirements Document (TRD)  
-**Version:** 0.1  
+**Version:** 0.2 — updated for the Intercept core-loop pivot (see §4.2)  
 **Status:** Proposed / architecture discovery  
-**Last updated:** August 11, 2026  
+**Last updated:** September 26, 2026  
 **Owner:** Mark Nelson
 
 Related document: [Business Requirements](./BUSINESS_REQUIREMENTS.md)  
@@ -27,7 +27,7 @@ The document authorizes neither a specific framework nor production implementati
 - Local settings, save data, and aggregate statistics.
 - Audio, haptic, animation, and accessibility presentation layers.
 - Privacy-minimized analytics and crash reporting behind build-time configuration.
-- Ad SDK integration (AdMob): persistent top banner on every non-gameplay screen (including pause), plus one interstitial per completed/exited challenge on the way back to a non-gameplay screen, gated behind a consent (GDPR/UMP, App Tracking Transparency) flow. Never shown during active target resolution, never gating the start of a challenge, never on ordinary menu navigation.
+- Ad SDK integration (AdMob): persistent top banner on every non-gameplay screen (including pause), plus one interstitial per completed/lost Intercept transmission (not per letter) on the way back to a non-gameplay screen, gated behind a consent (GDPR/UMP, App Tracking Transparency) flow. Never shown during active target resolution, never gating the start of a puzzle, never on ordinary menu navigation.
 - Platform game-services sign-in (Game Center on iOS; Play Games Services on Android, once testing resumes) gating access to gameplay, matching the portfolio's account-required access model. No custom backend.
 - Local persistence for progress, statistics, and settings, with the platform's own leaderboard/achievement services holding the account-scoped online state.
 - Per-platform leaderboard for endless-mode score, submitted through Game Center (iOS) / Play Games Services (Android) rather than a custom server.
@@ -81,7 +81,11 @@ Every operation must be a pure deterministic state transition. Visual effects ma
 
 ## 4. Content model
 
-Authored challenges shall be schema-validated data rather than hard-coded screens. A challenge definition must include:
+There are two content sources, both funneling into the same `Challenge` shape (`lib/content/challenge.dart`) the simulation and screens consume:
+
+### 4.1 Practice challenges
+
+A small hand-authored set (`ChallengeRepository`) for ad hoc testing outside the campaign. A challenge definition must include:
 
 - Stable challenge ID and content-schema version.
 - Initial register and target state.
@@ -92,7 +96,11 @@ Authored challenges shall be schema-validated data rather than hard-coded screen
 - Expected minimum solution length where known.
 - Designer test vectors or reference solution.
 
-Content loading must reject invalid bit widths, impossible operation references, duplicate IDs, unsupported schema versions, and challenges without a valid completion path. A solver or bounded reachability check should validate authored challenges during CI.
+These are still Dart literals rather than schema-validated external data (the schema-validated-data vision above is not yet built), so content loading has no format to reject invalid entries against yet; a solver-based test (`challenge_solvability_test.dart`) instead checks every entry is solvable within its budget, and this must keep running in CI.
+
+### 4.2 Intercept transmissions
+
+The campaign's actual content unit. A `Transmission` (`lib/intercept/transmission.dart`) is authored data — a phrase, a cipher key, a puzzle kind (Count/Shift/Rotate+Shift/mixed/advanced), and whether it's clocked — but its per-letter `Challenge`s are not authored directly: `PuzzleFactory` generates one deterministically from the transmission, the letter, and a retry-attempt counter, choosing a start state whose shortest solution (via the same BFS solver used for reachability checks) sits in a difficulty-appropriate move-count band. This means Intercept content validation is a property to test across every transmission and letter — every generated puzzle must be solvable within its move budget — rather than a fixed list to schema-check; `puzzle_factory_solvability_test.dart` is this check and must keep running in CI alongside 4.1's.
 
 ## 5. Input and presentation
 
