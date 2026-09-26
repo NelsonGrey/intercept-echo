@@ -65,7 +65,7 @@ each console's UI. See `docs/STORE_SETUP.md` for the exact values to enter.
 
 This project has no marketing site of its own (unlike Modulo Squares, which
 has a separate site/repo/domain). Privacy/Terms/Support live on the Nelson
-Grey site instead, under `games/shift-register-arcade/` in the
+Grey site instead, under `games/intercept-echo/` in the
 `nelson-grey` repo — see `docs/STORE_SETUP.md` for the URLs.
 
 ## Getting started

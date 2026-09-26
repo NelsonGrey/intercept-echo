@@ -114,7 +114,7 @@ class SettingsScreen extends StatelessWidget {
 class _LegalUrls {
   const _LegalUrls();
 
-  static const _base = 'https://nelsongrey.com/games/shift-register-arcade';
+  static const _base = 'https://nelsongrey.com/games/intercept-echo';
 
   Uri get privacy => Uri.parse('$_base/privacy');
   Uri get terms => Uri.parse('$_base/terms');

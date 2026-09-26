@@ -10,13 +10,16 @@ to link — sign-in, leaderboards, and achievements go through Game Center
 
 Intercept Echo has no marketing site of its own (unlike Modulo
 Squares, which has a separate site/repo/domain). Its Privacy/Terms/Support
-pages live on the Nelson Grey site instead, under `games/shift-register-arcade/`
-in the `nelson-grey` repo (the URL slug still uses the pre-rename working
-title — see "Outstanding from the rename" below):
+pages live on the Nelson Grey site instead, under `games/intercept-echo/`
+in the `nelson-grey` repo:
 
-- Privacy: <https://nelsongrey.com/games/shift-register-arcade/privacy>
-- Terms: <https://nelsongrey.com/games/shift-register-arcade/terms>
-- Support: <https://nelsongrey.com/games/shift-register-arcade/support>
+- Privacy: <https://nelsongrey.com/games/intercept-echo/privacy>
+- Terms: <https://nelsongrey.com/games/intercept-echo/terms>
+- Support: <https://nelsongrey.com/games/intercept-echo/support>
+
+(A 301 redirect from the old `/games/shift-register-arcade/...` slug is in
+place in `nelson-grey`'s `firebase.json`, in case it was already entered
+anywhere before the rename.)
 
 Use these for App Store Connect's Privacy Policy URL and Support URL, and
 Play Console's Privacy Policy URL, below.
@@ -57,20 +60,13 @@ Play Console's Privacy Policy URL, below.
    - Once Android testing resumes: validate the purchase flow the same way
      as iOS, on a real device with a licensed test account.
 
-## Outstanding from the Intercept Echo rename
+## Rename complete
 
-Everything in this repo (bundle IDs, package name, class names, docs) now
-says Intercept Echo. Two things intentionally weren't touched as part of
-the code rename, since they're cross-repo/external and reversible either
-way — decide these separately:
-
-- **Legal page URL slug**: the Nelson Grey site's pages are still at
-  `/games/shift-register-arcade/...` (see Legal/support URLs above). Cheap
-  to rename to `/games/intercept-echo/...` if nothing has referenced the
-  old slug yet (e.g. not yet entered into ASC/Play Console); once a URL is
-  live in a store listing or a player's saved link, renaming means adding a
-  redirect rather than just moving the page.
-- **GitHub repo name** (`NelsonGrey/shift-register`): renaming it changes
-  the repo's canonical URL (GitHub redirects the old one, but clone URLs,
-  CI, and any bookmarks would be pointing at a name that no longer matches
-  the product).
+The Intercept Echo rename is done end to end: bundle IDs, package name,
+class names, and docs in this repo; the GitHub repo itself
+(`NelsonGrey/shift-register` → `NelsonGrey/intercept-echo`, with GitHub's
+usual redirect from the old URL); and the Nelson Grey site's legal pages
+(`games/shift-register-arcade/` → `games/intercept-echo/`, with an explicit
+301 redirect as a safety net). If you cloned this repo before the rename,
+update your remote: `git remote set-url origin
+https://github.com/NelsonGrey/intercept-echo.git`.

@@ -295,9 +295,9 @@ void main() {
       }
 
       expect(opened, [
-        Uri.parse('https://nelsongrey.com/games/shift-register-arcade/privacy'),
-        Uri.parse('https://nelsongrey.com/games/shift-register-arcade/terms'),
-        Uri.parse('https://nelsongrey.com/games/shift-register-arcade/support'),
+        Uri.parse('https://nelsongrey.com/games/intercept-echo/privacy'),
+        Uri.parse('https://nelsongrey.com/games/intercept-echo/terms'),
+        Uri.parse('https://nelsongrey.com/games/intercept-echo/support'),
       ]);
     });
   });
