@@ -1,7 +1,7 @@
-# Shift-Register Arcade — Technical Requirements
+# Intercept Echo — Technical Requirements
 
 **Document type:** Technical Requirements Document (TRD)  
-**Version:** 0.2 — updated for the Intercept core-loop pivot (see §4.2)  
+**Version:** 0.3 — renamed to Intercept Echo (`com.interceptecho.app.ios`/`.android`)  
 **Status:** Proposed / architecture discovery  
 **Last updated:** September 26, 2026  
 **Owner:** Mark Nelson

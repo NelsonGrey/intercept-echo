@@ -1,11 +1,11 @@
-# Shift-Register Arcade — Business Requirements
+# Intercept Echo — Business Requirements
 
 **Document type:** Business Requirements Document (BRD)  
-**Version:** 0.2 — updated for the Intercept core-loop pivot (see §6, §8)  
+**Version:** 0.3 — renamed to Intercept Echo (`com.interceptecho.app.ios` accepted in App Store Connect)  
 **Status:** Proposed / discovery  
 **Last updated:** September 26, 2026  
 **Owner:** Mark Nelson  
-**Working concept:** Shift-register arcade; no final product title selected
+**Working title:** Intercept Echo — internal engine name "shift-register" retained for the underlying mechanic only
 
 Related document: [Technical Requirements](./TECHNICAL_REQUIREMENTS.md)  
 Portfolio context: [Requirements Index](../../PORTFOLIO_REQUIREMENTS_INDEX.md)

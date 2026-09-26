@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shift_register_arcade/content/challenge_repository.dart';
-import 'package:shift_register_arcade/content/clock.dart';
+import 'package:intercept_echo/content/challenge_repository.dart';
+import 'package:intercept_echo/content/clock.dart';
 
 void main() {
   test('each chapter tightens the tick', () {

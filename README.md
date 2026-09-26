@@ -1,9 +1,14 @@
-# Shift-Register Arcade
+# Intercept Echo
 
 Flutter monorepo. No custom backend: sign-in, leaderboards, achievements,
 and cloud save go through each platform's own game-services layer (Game
 Center on iOS; Play Games Services on Android, once testing resumes) rather
 than a shared Firebase project like the portfolio's earlier games.
+
+Renamed from the working title "Shift-Register Arcade" once
+`com.interceptecho.app.ios` was accepted in App Store Connect; "shift
+register" now refers only to the underlying register mechanic, not the
+product name.
 
 Related docs: [Business Requirements](./docs/BUSINESS_REQUIREMENTS.md) ·
 [Technical Requirements](./docs/TECHNICAL_REQUIREMENTS.md)
@@ -41,14 +46,14 @@ submission BUSINESS_REQUIREMENTS.md calls for, and gameplay analytics
 
 - `packages/mobile` — Flutter client (iOS + Android). Depends on [game-shell](https://github.com/NelsonGrey/game-shell) for auth, ads, consent, and the ad-removal entitlement — see that repo before reimplementing any of those.
 
-Bundle/package ID base: `com.shiftregisterarcade`
+Bundle/package ID base: `com.interceptecho`
 
 ## Deliverables
 
 | Deliverable | Platform | Identifier | Status |
 | --- | --- | --- | --- |
-| Android app | Google Play | `com.shiftregisterarcade.app.android` | Kept buildable; no tester group yet, Play Console listing not yet created (see [docs/STORE_SETUP.md](docs/STORE_SETUP.md)) |
-| iOS app | Apple App Store Connect | `com.shiftregisterarcade.app.ios` | ASC app record not yet created (see [docs/STORE_SETUP.md](docs/STORE_SETUP.md)) |
+| Android app | Google Play | `com.interceptecho.app.android` | Kept buildable; no tester group yet, Play Console listing not yet created (see [docs/STORE_SETUP.md](docs/STORE_SETUP.md)) |
+| iOS app | Apple App Store Connect | `com.interceptecho.app.ios` | Bundle ID accepted in App Store Connect; app record not yet created (see [docs/STORE_SETUP.md](docs/STORE_SETUP.md)) |
 
 ## Store setup still required manually
 

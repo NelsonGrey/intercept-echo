@@ -2,13 +2,7 @@
 
 ## Supported Versions
 
-**Shift-Register Arcade** is currently in discovery / pre-release status — see [Business Requirements](./docs/BUSINESS_REQUIREMENTS.md). Development flows `develop` → `staging` → `main`; only the code on these three branches is supported, there is no long-term support for older commits.
-
-| Branch    | Environment | GCP project          | Status                        |
-| --------- | ----------- | --------------------- | ------------------------------ |
-| `develop` | Development | `shift-register-arcade-dev`     | Active, default branch          |
-| `staging` | Staging     | `shift-register-arcade-staging` | Active                           |
-| `main`    | Production  | `shift-register-arcade-prod`    | Provisioned, not yet released    |
+**Intercept Echo** is currently in discovery / pre-release status — see [Business Requirements](./docs/BUSINESS_REQUIREMENTS.md). Development flows `develop` → `staging` → `main`; only the code on these three branches is supported, there is no long-term support for older commits. There is no backend project (Game Center/Play Games Services hold all account state — see the README), so there's no separate per-environment infrastructure to track here.
 
 ## Reporting a Vulnerability
 

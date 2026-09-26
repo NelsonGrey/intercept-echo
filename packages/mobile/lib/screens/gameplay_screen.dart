@@ -14,6 +14,7 @@ import '../domain/register_state.dart';
 import '../intercept/intercept_run.dart';
 import '../intercept/message_view.dart';
 import '../theme/game_theme.dart';
+import '../theme/intercept_echo_brand.dart';
 import 'results_screen.dart';
 
 /// The one gameplay screen in this vertical slice, laid out per the "Final
@@ -322,55 +323,59 @@ class _GameplayScreenState extends State<GameplayScreen> {
             showBanner: _isPaused,
             // GameScreenShell already applies the top inset around its
             // banner slot, so only the bottom one is added here.
-            body: SafeArea(
-              top: false,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
-                child: Column(
-                  children: [
-                    _header(p),
-                    if (widget.letter != null)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: MessageView(
-                          transmission: widget.letter!.transmission,
-                          revealed: _outcome?.won == true
-                              ? {
-                                  ...widget.letter!.revealed,
-                                  widget.letter!.letter,
-                                }
-                              : widget.letter!.revealed,
-                          highlight: widget.letter!.letter,
-                          palette: p,
-                          compact: true,
+            body: EchoBackdrop(
+              palette: p,
+              intensity: .45,
+              child: SafeArea(
+                top: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
+                  child: Column(
+                    children: [
+                      _header(p),
+                      if (widget.letter != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: MessageView(
+                            transmission: widget.letter!.transmission,
+                            revealed: _outcome?.won == true
+                                ? {
+                                    ...widget.letter!.revealed,
+                                    widget.letter!.letter,
+                                  }
+                                : widget.letter!.revealed,
+                            highlight: widget.letter!.letter,
+                            palette: p,
+                            compact: true,
+                          ),
                         ),
-                      ),
-                    Expanded(
-                      child: _isPaused
-                          ? Center(
-                              child: Text(
-                                'Paused',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w700,
-                                  color: p.textPrimary,
-                                ),
-                              ),
-                            )
-                          : Stack(
-                              children: [
-                                _board(p),
-                                if (_outcome != null)
-                                  Positioned(
-                                    left: 0,
-                                    right: 0,
-                                    bottom: 0,
-                                    child: _resultCard(p, _outcome!),
+                      Expanded(
+                        child: _isPaused
+                            ? Center(
+                                child: Text(
+                                  'Paused',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w700,
+                                    color: p.textPrimary,
                                   ),
-                              ],
-                            ),
-                    ),
-                  ],
+                                ),
+                              )
+                            : Stack(
+                                children: [
+                                  _board(p),
+                                  if (_outcome != null)
+                                    Positioned(
+                                      left: 0,
+                                      right: 0,
+                                      bottom: 0,
+                                      child: _resultCard(p, _outcome!),
+                                    ),
+                                ],
+                              ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

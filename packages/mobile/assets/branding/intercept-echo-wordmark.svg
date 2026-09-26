@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="420" viewBox="0 0 1200 420">
+  <defs>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="7" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="1200" height="420" rx="44" fill="#07111f"/>
+  <g fill="none" stroke="#35547d" stroke-width="2" opacity=".45">
+    <circle cx="600" cy="210" r="65"/><circle cx="600" cy="210" r="120"/>
+    <circle cx="600" cy="210" r="175"/><circle cx="600" cy="210" r="230"/>
+  </g>
+  <path d="M0 210H1200" stroke="#ffb454" stroke-width="2" opacity=".45"/>
+  <g fill="#ffb454" opacity=".75">
+    <circle cx="120" cy="210" r="4"/><circle cx="257" cy="210" r="4"/>
+    <circle cx="394" cy="210" r="4"/><circle cx="531" cy="210" r="4"/>
+    <circle cx="669" cy="210" r="4"/><circle cx="806" cy="210" r="4"/>
+    <circle cx="943" cy="210" r="4"/><circle cx="1080" cy="210" r="4"/>
+  </g>
+  <g text-anchor="middle" fill="#f5f1e8" font-family="Sora, Arial, sans-serif">
+    <text x="565" y="150" font-size="52" font-weight="600" letter-spacing="20">INTERCEPT</text>
+    <text x="520" y="300" font-size="164" font-weight="700" letter-spacing="12">ECHO</text>
+  </g>
+  <g fill="none" stroke="#ffb454" stroke-width="9" stroke-linecap="round" filter="url(#glow)">
+    <path d="M882 184a44 44 0 0 1 0 52"/>
+    <path d="M912 164a76 76 0 0 1 0 92"/>
+    <path d="M943 143a110 110 0 0 1 0 134"/>
+  </g>
+</svg>

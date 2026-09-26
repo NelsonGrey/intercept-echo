@@ -2,7 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shift_register_arcade/theme/game_theme.dart';
+import 'package:intercept_echo/theme/game_theme.dart';
 
 double _linearChannel(int channel) {
   final value = channel / 255;

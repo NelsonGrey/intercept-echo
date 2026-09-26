@@ -1,4 +1,4 @@
-package com.shiftregisterarcade.shift_register_arcade
+package com.interceptecho.app.android
 
 import io.flutter.embedding.android.FlutterActivity
 

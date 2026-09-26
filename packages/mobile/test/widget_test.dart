@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:game_shell/game_shell.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:shift_register_arcade/app/app_services.dart';
-import 'package:shift_register_arcade/main.dart';
-import 'package:shift_register_arcade/theme/game_theme.dart';
+import 'package:intercept_echo/app/app_services.dart';
+import 'package:intercept_echo/main.dart';
+import 'package:intercept_echo/theme/game_theme.dart';
 
 // Real UMP/AdMob/IAP services need platform plugin channels a widget test
 // doesn't have, so every test here injects the Fake* services (matching
@@ -21,15 +21,15 @@ void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
   testWidgets('boots to the home screen and shows the banner', (tester) async {
-    await tester.pumpWidget(ShiftRegisterArcadeApp(services: fakeServices()));
+    await tester.pumpWidget(InterceptEchoApp(services: fakeServices()));
     await tester.pumpAndSettle();
 
-    expect(find.text('Shift-Register Arcade'), findsOneWidget);
+    expect(find.bySemanticsLabel('Intercept Echo'), findsOneWidget);
     expect(find.byKey(const Key('fake_banner_ad')), findsOneWidget);
   });
 
   testWidgets('Practice opens the challenge list', (tester) async {
-    await tester.pumpWidget(ShiftRegisterArcadeApp(services: fakeServices()));
+    await tester.pumpWidget(InterceptEchoApp(services: fakeServices()));
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Practice'));
@@ -42,7 +42,7 @@ void main() {
     tester,
   ) async {
     final services = fakeServices();
-    await tester.pumpWidget(ShiftRegisterArcadeApp(services: services));
+    await tester.pumpWidget(InterceptEchoApp(services: services));
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Practice'));
@@ -76,7 +76,7 @@ void main() {
   });
 
   testWidgets('pausing shows the banner mid-round', (tester) async {
-    await tester.pumpWidget(ShiftRegisterArcadeApp(services: fakeServices()));
+    await tester.pumpWidget(InterceptEchoApp(services: fakeServices()));
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Practice'));
@@ -97,12 +97,12 @@ void main() {
     tester,
   ) async {
     final services = fakeServices();
-    await tester.pumpWidget(ShiftRegisterArcadeApp(services: services));
+    await tester.pumpWidget(InterceptEchoApp(services: services));
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Settings'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Arcade Neon'));
+    await tester.tap(find.text('Ultraviolet Relay'));
     await tester.pumpAndSettle();
 
     expect(services.theme.value, GameThemeId.arcadeNeon);
@@ -128,7 +128,7 @@ void main() {
   ) async {
     SharedPreferences.setMockInitialValues({'gameplay.theme': 'warmSunset'});
     final services = fakeServices();
-    await tester.pumpWidget(ShiftRegisterArcadeApp(services: services));
+    await tester.pumpWidget(InterceptEchoApp(services: services));
     await tester.pumpAndSettle();
     expect(services.theme.value, GameThemeId.warmSunset);
 
@@ -140,7 +140,7 @@ void main() {
   group('round clock', () {
     Future<AppServices> openChallenge(WidgetTester tester, String title) async {
       final services = fakeServices();
-      await tester.pumpWidget(ShiftRegisterArcadeApp(services: services));
+      await tester.pumpWidget(InterceptEchoApp(services: services));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Practice'));
       await tester.pumpAndSettle();
@@ -238,7 +238,7 @@ void main() {
 
     testWidgets('the relaxed clock toggle persists', (tester) async {
       final services = fakeServices();
-      await tester.pumpWidget(ShiftRegisterArcadeApp(services: services));
+      await tester.pumpWidget(InterceptEchoApp(services: services));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Settings'));
       await tester.pumpAndSettle();
@@ -257,7 +257,7 @@ void main() {
 
     testWidgets('Remove Ads purchases the ad-free entitlement', (tester) async {
       final services = fakeServices();
-      await tester.pumpWidget(ShiftRegisterArcadeApp(services: services));
+      await tester.pumpWidget(InterceptEchoApp(services: services));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Settings'));
       await tester.pumpAndSettle();
@@ -282,7 +282,7 @@ void main() {
     ) async {
       final opened = <Uri>[];
       final services = fakeServices(openUrl: (url) async => opened.add(url));
-      await tester.pumpWidget(ShiftRegisterArcadeApp(services: services));
+      await tester.pumpWidget(InterceptEchoApp(services: services));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Settings'));
       await tester.pumpAndSettle();
@@ -304,7 +304,7 @@ void main() {
 
   testWidgets('input stops once the round is over', (tester) async {
     final services = fakeServices();
-    await tester.pumpWidget(ShiftRegisterArcadeApp(services: services));
+    await tester.pumpWidget(InterceptEchoApp(services: services));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Practice'));
     await tester.pumpAndSettle();
@@ -325,7 +325,7 @@ void main() {
 
   testWidgets('Next after a win opens the following challenge', (tester) async {
     final services = fakeServices();
-    await tester.pumpWidget(ShiftRegisterArcadeApp(services: services));
+    await tester.pumpWidget(InterceptEchoApp(services: services));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Practice'));
     await tester.pumpAndSettle();

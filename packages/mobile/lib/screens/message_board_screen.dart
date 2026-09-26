@@ -5,6 +5,7 @@ import '../app/app_services.dart';
 import '../intercept/intercept_run.dart';
 import '../intercept/message_view.dart';
 import '../theme/game_theme.dart';
+import '../theme/intercept_echo_brand.dart';
 import 'gameplay_screen.dart';
 import 'guess_screen.dart';
 import 'transmission_result_screen.dart';
@@ -94,11 +95,15 @@ class _MessageBoardScreenState extends State<MessageBoardScreen> {
           backgroundColor: p.pageBg,
           body: GameScreenShell(
             adService: widget.services.ads,
-            body: SafeArea(
-              top: false,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
-                child: _run.campaignComplete ? _complete(p) : _board(p),
+            body: EchoBackdrop(
+              palette: p,
+              intensity: .65,
+              child: SafeArea(
+                top: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
+                  child: _run.campaignComplete ? _complete(p) : _board(p),
+                ),
               ),
             ),
           ),

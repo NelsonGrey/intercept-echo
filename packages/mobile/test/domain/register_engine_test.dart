@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shift_register_arcade/domain/operation_type.dart';
-import 'package:shift_register_arcade/domain/register_engine.dart';
-import 'package:shift_register_arcade/domain/register_state.dart';
+import 'package:intercept_echo/domain/operation_type.dart';
+import 'package:intercept_echo/domain/register_engine.dart';
+import 'package:intercept_echo/domain/register_state.dart';
 
 void main() {
   group('shiftLeft — exhaustive over all 256 values (SRA-TR-002)', () {

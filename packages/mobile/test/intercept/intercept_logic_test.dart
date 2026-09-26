@@ -1,11 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:shift_register_arcade/intercept/cipher.dart';
-import 'package:shift_register_arcade/intercept/intercept_run.dart';
-import 'package:shift_register_arcade/intercept/puzzle_factory.dart';
-import 'package:shift_register_arcade/intercept/transmission.dart';
-import 'package:shift_register_arcade/domain/solver.dart';
-import 'package:shift_register_arcade/settings/difficulty_setting.dart';
+import 'package:intercept_echo/intercept/cipher.dart';
+import 'package:intercept_echo/intercept/intercept_run.dart';
+import 'package:intercept_echo/intercept/puzzle_factory.dart';
+import 'package:intercept_echo/intercept/transmission.dart';
+import 'package:intercept_echo/domain/solver.dart';
+import 'package:intercept_echo/settings/difficulty_setting.dart';
 
 void main() {
   group('Cipher', () {

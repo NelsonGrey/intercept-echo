@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:game_shell/game_shell.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:shift_register_arcade/app/app_services.dart';
-import 'package:shift_register_arcade/main.dart';
+import 'package:intercept_echo/app/app_services.dart';
+import 'package:intercept_echo/main.dart';
 
 AppServices fakeServices() => AppServices(
   consent: FakeConsentService(),
@@ -37,7 +37,7 @@ void main() {
     tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.reset);
     final services = fakeServices();
-    await tester.pumpWidget(ShiftRegisterArcadeApp(services: services));
+    await tester.pumpWidget(InterceptEchoApp(services: services));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Play'));
     await tester.pumpAndSettle();

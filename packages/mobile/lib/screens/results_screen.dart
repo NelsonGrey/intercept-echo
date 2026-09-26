@@ -4,6 +4,7 @@ import 'package:game_shell/game_shell.dart';
 import '../app/app_services.dart';
 import '../content/challenge.dart';
 import '../content/challenge_repository.dart';
+import '../theme/intercept_echo_brand.dart';
 import 'gameplay_screen.dart';
 
 /// Reached only on the way *out* of a round (win or fail) — this is the
@@ -48,52 +49,60 @@ class ResultsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final next = _next;
+    final p = services.theme.palette;
     return Scaffold(
+      backgroundColor: p.pageBg,
       body: GameScreenShell(
         adService: services.ads,
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                won
-                    ? 'Target Matched'
-                    : (timedOut ? 'Out of Time' : 'Out of Moves'),
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: won ? Colors.green : Colors.red,
+        body: EchoBackdrop(
+          palette: p,
+          intensity: .65,
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  won
+                      ? 'Target Matched'
+                      : (timedOut ? 'Out of Time' : 'Out of Moves'),
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: won ? p.matchHit : p.matchMiss,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '${challenge.title} · $movesUsed/${challenge.moveBudget} moves',
-              ),
-              const SizedBox(height: 32),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  OutlinedButton(
-                    onPressed: () => Navigator.of(
-                      context,
-                    ).popUntil((route) => route.isFirst),
-                    child: const Text('Menu'),
-                  ),
-                  const SizedBox(width: 16),
-                  (won && next != null ? OutlinedButton.new : FilledButton.new)(
-                    onPressed: () => _play(context, challenge),
-                    child: const Text('Retry'),
-                  ),
-                  if (won && next != null) ...[
-                    const SizedBox(width: 16),
-                    FilledButton(
-                      onPressed: () => _play(context, next),
-                      child: const Text('Next'),
+                const SizedBox(height: 8),
+                Text(
+                  '${challenge.title} · $movesUsed/${challenge.moveBudget} moves',
+                ),
+                const SizedBox(height: 32),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    OutlinedButton(
+                      onPressed: () => Navigator.of(
+                        context,
+                      ).popUntil((route) => route.isFirst),
+                      child: const Text('Menu'),
                     ),
+                    const SizedBox(width: 16),
+                    (won && next != null
+                        ? OutlinedButton.new
+                        : FilledButton.new)(
+                      onPressed: () => _play(context, challenge),
+                      child: const Text('Retry'),
+                    ),
+                    if (won && next != null) ...[
+                      const SizedBox(width: 16),
+                      FilledButton(
+                        onPressed: () => _play(context, next),
+                        child: const Text('Next'),
+                      ),
+                    ],
                   ],
-                ],
-              ),
-            ],
+                ),
+              ],
+            ),
           ),
         ),
       ),

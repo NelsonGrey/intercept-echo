@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shift_register_arcade/content/challenge_repository.dart';
-import 'package:shift_register_arcade/domain/solver.dart';
+import 'package:intercept_echo/content/challenge_repository.dart';
+import 'package:intercept_echo/domain/solver.dart';
 
 /// SRA-TR-004: every authored challenge is machine-checked, so content
 /// like the old "Full Circle" (which started already solved) cannot ship.

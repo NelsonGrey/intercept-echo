@@ -85,33 +85,33 @@ class GameThemePalette {
 
 const Map<GameThemeId, GameThemePalette> gameThemePalettes = {
   GameThemeId.signal: GameThemePalette(
-    name: 'Signal',
-    pageBg: Color(0xFFF3F1EC),
-    textPrimary: Color(0xFF16181D),
-    textMuted: Color(0xFF555B67),
-    clockTrack: Color(0xFFD5D3CC),
-    clockFill: Color(0xFF16181D),
-    targetOnBg: Color(0xFFE4E7FB),
-    targetOnBorder: Color(0xFF3645C9),
-    targetOnFg: Color(0xFF3645C9),
-    targetOffBorder: Color(0xFF86847C),
-    targetOffFg: Color(0xFF3A3F4A),
-    matchHit: Color(0xFF16181D),
-    matchMiss: Color(0xFFC2540A),
-    bitOnBg: Color(0xFF3645C9),
-    bitOnShadow: Color(0xFF1F2A8A),
+    name: 'Intercept Echo',
+    pageBg: Color(0xFF07111F),
+    textPrimary: Color(0xFFF5F1E8),
+    textMuted: Color(0xFFA7B5C9),
+    clockTrack: Color(0xFF31435D),
+    clockFill: Color(0xFFFFB454),
+    targetOnBg: Color(0xFF16294A),
+    targetOnBorder: Color(0xFF78A1FF),
+    targetOnFg: Color(0xFFB8CDFF),
+    targetOffBorder: Color(0xFF6E83A3),
+    targetOffFg: Color(0xFFCAD4E3),
+    matchHit: Color(0xFF70E0BD),
+    matchMiss: Color(0xFFFF8C75),
+    bitOnBg: Color(0xFF3F6ED8),
+    bitOnShadow: Color(0xFF1B3E8C),
     bitOnFg: Color(0xFFFFFFFF),
-    bitOffBg: Color(0xFFFFFFFF),
-    bitOffBorder: Color(0xFF86847C),
-    bitOffFg: Color(0xFF2E323B),
-    overflowBg: Color(0xFFFCE9DA),
-    overflowAccent: Color(0xFFC2540A),
-    overflowLabel: Color(0xFF8A3A06),
-    buttonBg: Color(0xFF16181D),
-    buttonFg: Color(0xFFFFFFFF),
+    bitOffBg: Color(0xFF101D30),
+    bitOffBorder: Color(0xFF6E83A3),
+    bitOffFg: Color(0xFFE6ECF5),
+    overflowBg: Color(0xFF2C2012),
+    overflowAccent: Color(0xFFFFB454),
+    overflowLabel: Color(0xFFFFC979),
+    buttonBg: Color(0xFFFFB454),
+    buttonFg: Color(0xFF191108),
   ),
   GameThemeId.deepOcean: GameThemePalette(
-    name: 'Deep Ocean',
+    name: 'Clear Frequency',
     pageBg: Color(0xFFFFFFFF),
     textPrimary: Color(0xFF10262E),
     textMuted: Color(0xFF4A6B73),
@@ -138,7 +138,7 @@ const Map<GameThemeId, GameThemePalette> gameThemePalettes = {
     buttonFg: Color(0xFF0A2A2F),
   ),
   GameThemeId.arcadeNeon: GameThemePalette(
-    name: 'Arcade Neon',
+    name: 'Ultraviolet Relay',
     pageBg: Color(0xFF11162A),
     textPrimary: Color(0xFFF2F7FF),
     textMuted: Color(0xFF8C9AB8),
@@ -164,7 +164,7 @@ const Map<GameThemeId, GameThemePalette> gameThemePalettes = {
     buttonFg: Color(0xFF05131F),
   ),
   GameThemeId.warmSunset: GameThemePalette(
-    name: 'Warm Sunset',
+    name: 'Amber Field',
     pageBg: Color(0xFFFFFCF7),
     textPrimary: Color(0xFF3A2418),
     textMuted: Color(0xFF7E5F45),
@@ -192,7 +192,7 @@ const Map<GameThemeId, GameThemePalette> gameThemePalettes = {
     buttonFg: Color(0xFFFFFFFF),
   ),
   GameThemeId.candyPop: GameThemePalette(
-    name: 'Candy Pop',
+    name: 'Rose Frequency',
     pageBg: Color(0xFFFFFFFF),
     textPrimary: Color(0xFF3B0A56),
     textMuted: Color(0xFF6E4E82),
@@ -219,8 +219,8 @@ const Map<GameThemeId, GameThemePalette> gameThemePalettes = {
   ),
 };
 
-/// Display order for the palette picker; Signal is the default for new
-/// players.
+/// Display order for the palette picker; Intercept Echo is the dark default
+/// for new players, followed by four deliberately different alternatives.
 const List<GameThemeId> gameThemeOrder = [
   GameThemeId.signal,
   GameThemeId.deepOcean,
@@ -230,3 +230,60 @@ const List<GameThemeId> gameThemeOrder = [
 ];
 
 const GameThemeId defaultGameTheme = GameThemeId.signal;
+
+/// Builds the Material shell from the same palette used by gameplay so menus,
+/// dialogs and settings change appearance with the player's selection too.
+ThemeData materialThemeFor(GameThemePalette p) {
+  final brightness = ThemeData.estimateBrightnessForColor(p.pageBg);
+  final scheme =
+      ColorScheme.fromSeed(
+        seedColor: p.bitOnBg,
+        brightness: brightness,
+        surface: p.pageBg,
+      ).copyWith(
+        primary: p.buttonBg,
+        onPrimary: p.buttonFg,
+        secondary: p.overflowAccent,
+        onSecondary: p.buttonFg,
+        surface: p.pageBg,
+        onSurface: p.textPrimary,
+        error: p.matchMiss,
+      );
+
+  return ThemeData(
+    colorScheme: scheme,
+    scaffoldBackgroundColor: p.pageBg,
+    canvasColor: p.pageBg,
+    useMaterial3: true,
+    fontFamily: 'Sora',
+    appBarTheme: AppBarTheme(
+      backgroundColor: p.pageBg,
+      foregroundColor: p.textPrimary,
+      surfaceTintColor: Colors.transparent,
+      centerTitle: true,
+    ),
+    dividerColor: p.clockTrack,
+    listTileTheme: ListTileThemeData(
+      iconColor: p.textMuted,
+      textColor: p.textPrimary,
+      selectedColor: p.textPrimary,
+      selectedTileColor: p.targetOnBg,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    ),
+    filledButtonTheme: FilledButtonThemeData(
+      style: FilledButton.styleFrom(
+        backgroundColor: p.buttonBg,
+        foregroundColor: p.buttonFg,
+        textStyle: const TextStyle(fontWeight: FontWeight.w700),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    ),
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        foregroundColor: p.textPrimary,
+        side: BorderSide(color: p.targetOffBorder),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    ),
+  );
+}

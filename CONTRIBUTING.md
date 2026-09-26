@@ -1,6 +1,6 @@
 # Contributing
 
-Shift-Register Arcade is a private, closed-source project in discovery / pre-release status. It isn't open to outside contributions — there's no public issue tracker or pull request process for external contributors.
+Intercept Echo is a private, closed-source project in discovery / pre-release status. It isn't open to outside contributions — there's no public issue tracker or pull request process for external contributors.
 
 If you have collaborator access to this repository:
 

@@ -5,6 +5,7 @@ import '../app/app_services.dart';
 import '../intercept/intercept_run.dart';
 import '../intercept/message_view.dart';
 import '../theme/game_theme.dart';
+import '../theme/intercept_echo_brand.dart';
 
 /// Guess the whole message. Typed letters fill the hidden slots in reading
 /// order; cracked letters stay fixed. A right guess decodes the
@@ -81,92 +82,96 @@ class _GuessScreenState extends State<GuessScreen> {
         adService: widget.services.ads,
         // Deduction in progress: treated like active play, no banner.
         showBanner: false,
-        body: SafeArea(
-          top: false,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
-            child: Column(
-              children: [
-                SizedBox(
-                  height: 52,
-                  child: Row(
-                    children: [
-                      IconButton(
-                        tooltip: 'Back to the message',
-                        icon: Icon(Icons.chevron_left, color: p.textPrimary),
-                        onPressed: () => Navigator.of(context).maybePop(),
-                      ),
-                      Expanded(
-                        child: Text(
-                          'Guess the message',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                            color: p.textPrimary,
+        body: EchoBackdrop(
+          palette: p,
+          intensity: .5,
+          child: SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
+              child: Column(
+                children: [
+                  SizedBox(
+                    height: 52,
+                    child: Row(
+                      children: [
+                        IconButton(
+                          tooltip: 'Back to the message',
+                          icon: Icon(Icons.chevron_left, color: p.textPrimary),
+                          onPressed: () => Navigator.of(context).maybePop(),
+                        ),
+                        Expanded(
+                          child: Text(
+                            'Guess the message',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              color: p.textPrimary,
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 48),
-                    ],
+                        const SizedBox(width: 48),
+                      ],
+                    ),
                   ),
-                ),
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 22,
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 22,
+                          ),
+                          decoration: BoxDecoration(
+                            color: p.bitOffBg,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: p.clockTrack, width: 1.5),
+                          ),
+                          child: MessageView(
+                            transmission: _run.current,
+                            revealed: _run.revealed,
+                            guess: _typed,
+                            palette: p,
+                          ),
                         ),
-                        decoration: BoxDecoration(
-                          color: p.bitOffBg,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: p.clockTrack, width: 1.5),
-                        ),
-                        child: MessageView(
-                          transmission: _run.current,
-                          revealed: _run.revealed,
-                          guess: _typed,
-                          palette: p,
-                        ),
-                      ),
-                      const SizedBox(height: 18),
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: p.overflowBg,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          children: [
-                            SignalBars(
-                              bars: _run.bars,
-                              palette: p,
-                              showLabel: false,
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                'A wrong guess costs a signal bar. A right '
-                                'one skips the rest for a bonus.',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: p.overflowLabel,
+                        const SizedBox(height: 18),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: p.overflowBg,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            children: [
+                              SignalBars(
+                                bars: _run.bars,
+                                palette: p,
+                                showLabel: false,
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  'A wrong guess costs a signal bar. A right '
+                                  'one skips the rest for a bonus.',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: p.overflowLabel,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-                if (_right == null) _keyboard(p) else _outcome(p, _right!),
-              ],
+                  if (_right == null) _keyboard(p) else _outcome(p, _right!),
+                ],
+              ),
             ),
           ),
         ),

@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shift_register_arcade/domain/solver.dart';
-import 'package:shift_register_arcade/intercept/puzzle_factory.dart';
-import 'package:shift_register_arcade/intercept/transmission.dart';
+import 'package:intercept_echo/domain/solver.dart';
+import 'package:intercept_echo/intercept/puzzle_factory.dart';
+import 'package:intercept_echo/intercept/transmission.dart';
 
 /// SRA-TR-004 for Intercept: every letter of every transmission must
 /// generate a puzzle that's actually solvable within its move budget, not

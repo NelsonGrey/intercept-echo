@@ -1,5 +1,5 @@
-name: shift_register_arcade
-description: "A new Flutter project."
+name: intercept_echo
+description: "Intercept Echo: shift bits, crack transmissions."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -73,6 +73,9 @@ flutter:
   assets:
     - assets/fonts/Sora-OFL.txt
     - assets/fonts/IBMPlexMono-OFL.txt
+    - assets/branding/intercept-echo-wordmark.png
+    - assets/branding/intercept-echo-mark.png
+    - assets/branding/app-icon-master.png
 
   fonts:
     - family: Sora
