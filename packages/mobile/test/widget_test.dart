@@ -13,6 +13,7 @@ AppServices fakeServices() => AppServices(
   consent: FakeConsentService(),
   entitlement: FakeEntitlementService(),
   ads: FakeAdService(),
+  auth: FakePlatformGameAuthService(),
 );
 
 void main() {

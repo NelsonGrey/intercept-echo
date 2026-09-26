@@ -80,8 +80,8 @@ The MVP must include:
 - At least 40 authored challenges across four mechanic chapters.
 - One endless score mode with deterministic difficulty progression.
 - Local progression, settings, statistics, and achievement-like milestones.
-- Account sign-in (Google or Apple) required before the first challenge; a complete experience thereafter that stays playable offline between sync points, with progress and leaderboard scores syncing to the cloud when connected.
-- A global leaderboard for endless-mode score, backed by cloud sync.
+- Platform sign-in (Game Center on iOS; Play Games Services on Android, once testing resumes) required before the first challenge, with no custom backend — the platform's own identity, save, and leaderboard services hold the account state.
+- A per-platform leaderboard for endless-mode score, backed by Game Center on iOS and Play Games Services on Android. Leaderboards are siloed per platform, not unified across them.
 
 Daily challenges, social sharing, additional bit widths, signed arithmetic, and a level editor are post-MVP candidates.
 
@@ -94,7 +94,7 @@ Daily challenges, social sharing, additional bit widths, signed arithmetic, and 
 | SRA-BR-003 | Overflow shall create a meaningful resource or scoring decision and shall not be a cosmetic effect.                               | Must     | Design rules and playtest evidence showing at least two viable uses |
 | SRA-BR-004 | Every failed target shall display the operation history and the visible reason for failure.                                       | Must     | Failure-state acceptance test                                       |
 | SRA-BR-005 | The MVP shall provide at least 40 authored challenges and one replayable endless mode.                                            | Must     | Content inventory and completed release build                       |
-| SRA-BR-006 | Players shall sign in with Google or Apple before the first challenge; the signed-in session shall then support offline play with progress syncing when connectivity returns.           | Must     | Sign-in and offline-sync end-to-end test                            |
+| SRA-BR-006 | Players shall sign in via the platform's game-services identity (Game Center on iOS; Play Games Services on Android, once testing resumes) before the first challenge; the signed-in session shall then support offline play, with no custom backend involved.           | Must     | Platform sign-in end-to-end test                            |
 | SRA-BR-007 | The commercial model shall be free-to-play with banner and interstitial advertising, plus a one-time purchase that removes all ads. | Must   | Approved pricing and store-product configuration                    |
 | SRA-BR-008 | The game shall present technical names only after the corresponding operation has been learned visually.                          | Should   | Tutorial/content review                                             |
 | SRA-BR-009 | The visual, audio, UI, code, writing, and level content shall be original or supported by retained license records.               | Must     | Asset provenance register and release audit                         |
@@ -104,7 +104,7 @@ Daily challenges, social sharing, additional bit widths, signed arithmetic, and 
 | SRA-BR-013 | Core information shall remain understandable without color or audio.                                                              | Must     | Accessibility review and test evidence                              |
 | SRA-BR-014 | Store materials shall describe the game as entertainment first and shall not claim guaranteed educational outcomes.               | Must     | Store-listing review                                                |
 | SRA-BR-015 | Free players shall see a persistent banner ad on every non-gameplay screen, including the pause overlay, and one interstitial ad when a challenge ends and the player returns to a non-gameplay screen. Ads shall never appear during active target resolution, shall never gate the start of a challenge, and shall never fire on ordinary menu navigation. | Must | Ad-placement review and playtest evidence |
-| SRA-BR-016 | Logged-in players shall be able to view a global leaderboard and submit scores from endless-mode score; paid (ad-removal) players retain full access. | Must | Leaderboard integration test |
+| SRA-BR-016 | Logged-in players shall be able to view their platform's leaderboard and submit endless-mode scores to it; paid (ad-removal) players retain full access. | Must | Platform leaderboard integration test |
 
 ## 8. Progression and content strategy
 
@@ -122,7 +122,7 @@ Each challenge should introduce or combine one idea. Repetition should come from
 The game follows the portfolio's standard financial model, matching Modulo Squares: free-to-play with advertising, plus a one-time purchase that removes all ads.
 
 - **Free tier:** the complete game, supported by a persistent banner ad (top of screen) on every non-gameplay screen — menu, chapter/challenge select, settings, results, and the pause overlay — plus one interstitial ad when a challenge ends and the player returns to a non-gameplay screen. Ads never appear during active target resolution, never gate the start of a challenge, and never fire on ordinary menu navigation.
-- **Access tiers** (matching Modulo Squares): guest/unauthenticated players get no gameplay entry — sign-in is required before the first challenge. Logged-in free players get full gameplay plus leaderboard participation. Paid logged-in players get full gameplay with ads disabled. This is the default; a future guest mode would need its own local-progress and conversion rules defined before it could ship.
+- **Access tiers:** guest/unauthenticated players get no gameplay entry — platform sign-in (Game Center/Play Games Services) is required before the first challenge. Logged-in free players get full gameplay plus their platform's leaderboard participation. Paid logged-in players get full gameplay with ads disabled. This is the default; a future guest mode would need its own local-progress and conversion rules defined before it could ship.
 - **Ad removal:** a single one-time in-app purchase disables all ads permanently. This is the only purchase in the MVP.
 - **Never monetized:** operations, undo, accessibility features, or any competitive advantage. No consumable currencies or energy timers.
 - Cosmetic themes or future content packs may be considered post-launch but are not part of the MVP and are never required to enjoy the free ad-supported experience.

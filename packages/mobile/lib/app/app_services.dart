@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:game_shell/game_shell.dart';
 
 import '../intercept/intercept_run.dart';
@@ -15,6 +17,7 @@ class AppServices {
     ConsentService? consent,
     EntitlementService? entitlement,
     AdService? ads,
+    PlatformGameAuthService? auth,
     ThemeController? theme,
     RelaxedClockSetting? relaxedClock,
     InterceptRun? intercept,
@@ -27,11 +30,21 @@ class AppServices {
        entitlement =
            entitlement ??
            IapEntitlementService(adRemovalProductId: 'ad_removal'),
-       ads = ads ?? AdMobAdService(AdMobConfig.test());
+       ads = ads ?? AdMobAdService(AdMobConfig.test()),
+       auth = auth ?? _defaultAuth();
 
   final ConsentService consent;
   final EntitlementService entitlement;
   final AdService ads;
+
+  /// Game Center on iOS/macOS. Android falls back to a fake — Play Games
+  /// Services isn't wired up yet (no tester group; see README status).
+  final PlatformGameAuthService auth;
+
+  static PlatformGameAuthService _defaultAuth() =>
+      (Platform.isIOS || Platform.isMacOS)
+      ? GameCenterAuthService()
+      : FakePlatformGameAuthService();
 
   /// The player's gameplay palette. Not a game-shell service — it lives
   /// here so every screen reaches it the same way.
@@ -58,6 +71,14 @@ class AppServices {
     await intercept.load();
     await consent.requestConsent();
     await entitlement.restore();
+
+    // Best-effort: a failed/declined platform sign-in (e.g. no Game Center
+    // account on this device) shouldn't block the app from starting.
+    try {
+      await auth.signIn();
+    } catch (_) {
+      // Swallowed deliberately — see comment above.
+    }
 
     if (consent.canRequestAds) {
       await ads.initialize();

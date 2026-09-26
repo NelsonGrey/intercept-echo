@@ -24,4 +24,4 @@ You should get an acknowledgement within a few business days. This is a small, p
 
 ## Automated Dependency Scanning
 
-Dependabot alerts are enabled on this repository (org default), and `.github/dependabot.yml` opens weekly update PRs for GitHub Actions, the Cloud Functions npm dependencies, and the Flutter/pub dependencies. Native GitHub secret scanning and code scanning (CodeQL) require GitHub Advanced Security, which isn't currently licensed for this org's private repositories, so neither is enabled here. Avoid committing credentials or secrets to this repo regardless — downloaded Firebase config (`firebase-config/`) is gitignored, and there are no other runtime secrets checked in.
+Dependabot alerts are enabled on this repository (org default), and `.github/dependabot.yml` opens weekly update PRs for GitHub Actions and the Flutter/pub dependencies. Native GitHub secret scanning and code scanning (CodeQL) require GitHub Advanced Security, which isn't currently licensed for this org's private repositories, so neither is enabled here. Avoid committing credentials or secrets to this repo regardless — there are no runtime secrets checked in.

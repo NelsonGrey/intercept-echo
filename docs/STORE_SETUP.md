@@ -1,8 +1,10 @@
 # Store setup checklist — Shift-Register Arcade
 
 Neither Google Play nor Apple provide a public API to create a brand-new
-app listing, so this part is manual. Everything else (bundle IDs, Firebase
-projects, CI) is already wired up to match these values.
+app listing, so this part is manual. Everything else (bundle IDs, CI) is
+already wired up to match these values. This project has no backend project
+to link — sign-in, leaderboards, and achievements go through Game Center
+(iOS) and Play Games Services (Android) directly.
 
 ## Apple App Store Connect
 
@@ -20,7 +22,6 @@ projects, CI) is already wired up to match these values.
    - App name: Shift-Register Arcade
    - Package name: `com.shiftregisterarcade.app.android` (must match exactly, permanent)
    - Default language, Free/Paid per BUSINESS_REQUIREMENTS.md monetization section
-2. Play Console → Setup → API access → link the `shift-register-arcade-prod` GCP project,
-   then create a service account (`google-play-console-service@shift-register-arcade-prod.iam.gserviceaccount.com`)
-   matching the pattern used by modulo-squares/vehicle-vitals/wishlist-wizard,
-   grant it Release Manager access.
+2. Play Console → Play Games Services → set up a new Play Games Services
+   project for `com.shiftregisterarcade.app.android`, once Android testing
+   resumes (see README status).
