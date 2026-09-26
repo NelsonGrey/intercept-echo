@@ -24,19 +24,27 @@ void main() {
     });
   }
 
-  test('Shift budgets are exactly the shortest solution', () {
-    // The Shift chapter is an optimization puzzle: no spare moves.
-    for (final c in ChallengeRepository.all.where(
-      (c) => c.chapter == 'Shift',
-    )) {
-      final best = shortestSolution(
-        start: c.initialBits,
-        target: c.targetBits,
-        operations: c.allowedOperations,
-      );
-      expect(best, c.moveBudget, reason: c.id);
-    }
-  });
+  test(
+    'Shift challenges track par as their shortest solution, with slack '
+    'in the budget for PracticeScoring to grade',
+    () {
+      for (final c in ChallengeRepository.all.where(
+        (c) => c.chapter == 'Shift',
+      )) {
+        final best = shortestSolution(
+          start: c.initialBits,
+          target: c.targetBits,
+          operations: c.allowedOperations,
+        );
+        expect(c.parMoves, best, reason: c.id);
+        expect(
+          c.moveBudget,
+          c.parMoves! + ChallengeRepository.shiftSlack,
+          reason: c.id,
+        );
+      }
+    },
+  );
 
   test('challenge ids and titles are unique', () {
     final ids = ChallengeRepository.all.map((c) => c.id).toSet();

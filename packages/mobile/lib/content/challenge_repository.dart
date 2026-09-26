@@ -16,6 +16,11 @@ import 'challenge.dart';
 class ChallengeRepository {
   const ChallengeRepository._();
 
+  /// Extra moves the Shift chapter's budget gives beyond each puzzle's par
+  /// (its shortest solution) — room to recover from a wrong shift without
+  /// failing the round. [PracticeScoring] scores how much of it gets used.
+  static const shiftSlack = 2;
+
   static const List<Challenge> all = [
     Challenge(
       id: 'count-01',
@@ -137,7 +142,8 @@ class ChallengeRepository {
       initialBits: 3,
       targetBits: 6,
       allowedOperations: [OperationType.shiftLeft, OperationType.shiftRight],
-      moveBudget: 1,
+      moveBudget: 1 + shiftSlack,
+      parMoves: 1,
       targetStyle: TargetStyle.number,
       clocked: false,
     ),
@@ -148,7 +154,8 @@ class ChallengeRepository {
       initialBits: 3,
       targetBits: 12,
       allowedOperations: [OperationType.shiftLeft, OperationType.shiftRight],
-      moveBudget: 2,
+      moveBudget: 2 + shiftSlack,
+      parMoves: 2,
       targetStyle: TargetStyle.number,
     ),
     Challenge(
@@ -158,7 +165,8 @@ class ChallengeRepository {
       initialBits: 12,
       targetBits: 6,
       allowedOperations: [OperationType.shiftLeft, OperationType.shiftRight],
-      moveBudget: 1,
+      moveBudget: 1 + shiftSlack,
+      parMoves: 1,
       targetStyle: TargetStyle.number,
     ),
     Challenge(
@@ -168,7 +176,8 @@ class ChallengeRepository {
       initialBits: 80,
       targetBits: 20,
       allowedOperations: [OperationType.shiftLeft, OperationType.shiftRight],
-      moveBudget: 2,
+      moveBudget: 2 + shiftSlack,
+      parMoves: 2,
       targetStyle: TargetStyle.number,
     ),
     Challenge(
@@ -178,7 +187,8 @@ class ChallengeRepository {
       initialBits: 13,
       targetBits: 6,
       allowedOperations: [OperationType.shiftLeft, OperationType.shiftRight],
-      moveBudget: 1,
+      moveBudget: 1 + shiftSlack,
+      parMoves: 1,
       targetStyle: TargetStyle.number,
     ),
     Challenge(
@@ -188,7 +198,8 @@ class ChallengeRepository {
       initialBits: 11,
       targetBits: 10,
       allowedOperations: [OperationType.shiftLeft, OperationType.shiftRight],
-      moveBudget: 2,
+      moveBudget: 2 + shiftSlack,
+      parMoves: 2,
       targetStyle: TargetStyle.number,
     ),
     Challenge(
@@ -198,7 +209,8 @@ class ChallengeRepository {
       initialBits: 130,
       targetBits: 4,
       allowedOperations: [OperationType.shiftLeft, OperationType.shiftRight],
-      moveBudget: 1,
+      moveBudget: 1 + shiftSlack,
+      parMoves: 1,
       targetStyle: TargetStyle.number,
     ),
     Challenge(
@@ -208,7 +220,8 @@ class ChallengeRepository {
       initialBits: 200,
       targetBits: 72,
       allowedOperations: [OperationType.shiftLeft, OperationType.shiftRight],
-      moveBudget: 2,
+      moveBudget: 2 + shiftSlack,
+      parMoves: 2,
       targetStyle: TargetStyle.number,
     ),
     Challenge(
@@ -218,7 +231,8 @@ class ChallengeRepository {
       initialBits: 27,
       targetBits: 12,
       allowedOperations: [OperationType.shiftLeft, OperationType.shiftRight],
-      moveBudget: 3,
+      moveBudget: 3 + shiftSlack,
+      parMoves: 3,
       targetStyle: TargetStyle.number,
     ),
     Challenge(
@@ -228,7 +242,8 @@ class ChallengeRepository {
       initialBits: 255,
       targetBits: 120,
       allowedOperations: [OperationType.shiftLeft, OperationType.shiftRight],
-      moveBudget: 5,
+      moveBudget: 5 + shiftSlack,
+      parMoves: 5,
       targetStyle: TargetStyle.number,
     ),
     Challenge(

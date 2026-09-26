@@ -19,6 +19,7 @@ class Challenge {
     required this.targetBits,
     required this.allowedOperations,
     required this.moveBudget,
+    this.parMoves,
     this.maskOperand,
     this.clocked = true,
     this.targetStyle = TargetStyle.bits,
@@ -38,6 +39,14 @@ class Challenge {
   /// runs alongside this in the screen layer; the simulation itself stays
   /// timer-free and deterministic.
   final int moveBudget;
+
+  /// The shortest possible solution, when the challenge is authored to
+  /// track one (the Shift chapter). [moveBudget] gives room beyond this to
+  /// recover from a wrong shift; [PracticeScoring] scores how much of that
+  /// room the player actually used. Null for chapters that don't track an
+  /// optimum (Count's budget is already move-for-move; Preserve/Transform
+  /// aren't scored).
+  final int? parMoves;
 
   final int? maskOperand;
 
@@ -60,4 +69,29 @@ class Challenge {
   final bool hideValue;
 
   Duration get tickDuration => tickDurationFor(chapter);
+}
+
+/// Practice-mode efficiency scoring for challenges with a [Challenge.parMoves]
+/// (the Shift chapter). Kept together so tuning after playtests is one
+/// place — mirrors how InterceptScoring is organized for the campaign.
+class PracticeScoring {
+  const PracticeScoring._();
+
+  static const perfectScore = 100;
+
+  /// Points lost per move beyond par.
+  static const perExtraMove = 25;
+
+  /// A solved round always earns at least this many points, however many
+  /// extra moves it took.
+  static const minScore = 10;
+
+  /// The efficiency score for a solved [challenge], or null when it
+  /// doesn't track a par to score against.
+  static int? scoreFor(Challenge challenge, int movesUsed) {
+    final par = challenge.parMoves;
+    if (par == null) return null;
+    final extra = (movesUsed - par).clamp(0, 1 << 30);
+    return (perfectScore - perExtraMove * extra).clamp(minScore, perfectScore);
+  }
 }

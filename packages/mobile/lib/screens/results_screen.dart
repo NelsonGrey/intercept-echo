@@ -75,6 +75,16 @@ class ResultsScreen extends StatelessWidget {
                 Text(
                   '${challenge.title} · $movesUsed/${challenge.moveBudget} moves',
                 ),
+                if (won)
+                  if (PracticeScoring.scoreFor(challenge, movesUsed)
+                      case final score?) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      movesUsed > challenge.parMoves!
+                          ? 'Score: $score (par ${challenge.parMoves})'
+                          : 'Score: $score — par',
+                    ),
+                  ],
                 const SizedBox(height: 32),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
