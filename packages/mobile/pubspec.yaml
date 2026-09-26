@@ -39,6 +39,9 @@ dependencies:
   # Persists the chosen gameplay palette (lib/theme/theme_controller.dart).
   shared_preferences: ^2.5.5
 
+  # Opens the Privacy/Terms/Support pages from Settings (lib/screens/settings_screen.dart).
+  url_launcher: ^6.3.2
+
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8

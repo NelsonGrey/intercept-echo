@@ -1,11 +1,22 @@
 import 'dart:io';
 
 import 'package:game_shell/game_shell.dart';
+import 'package:url_launcher/url_launcher.dart' as url_launcher;
 
 import '../intercept/intercept_run.dart';
 import '../settings/difficulty_setting.dart';
 import '../settings/relaxed_clock_setting.dart';
 import '../theme/theme_controller.dart';
+
+/// Opens a URL in the device's browser. A function, not a call straight to
+/// `url_launcher`, so widget tests can inject a fake instead of hitting a
+/// real platform channel.
+typedef UrlOpener = Future<void> Function(Uri url);
+
+Future<void> _defaultOpenUrl(Uri url) => url_launcher.launchUrl(
+  url,
+  mode: url_launcher.LaunchMode.externalApplication,
+);
 
 /// Portfolio-standard game-shell services for this app, wired per the
 /// game-shell README's "Wiring order". Real AdMob IDs aren't provisioned
@@ -22,10 +33,12 @@ class AppServices {
     RelaxedClockSetting? relaxedClock,
     InterceptRun? intercept,
     DifficultySetting? difficulty,
+    UrlOpener? openUrl,
   }) : difficulty = difficulty ?? DifficultySetting(),
        intercept = intercept ?? InterceptRun(),
        theme = theme ?? ThemeController(),
        relaxedClock = relaxedClock ?? RelaxedClockSetting(),
+       openUrl = openUrl ?? _defaultOpenUrl,
        consent = consent ?? UmpConsentService(),
        entitlement =
            entitlement ??
@@ -58,6 +71,9 @@ class AppServices {
 
   /// Campaign progress through the Intercept transmissions.
   final InterceptRun intercept;
+
+  /// Opens the Privacy/Terms/Support links in Settings.
+  final UrlOpener openUrl;
 
   bool _initialized = false;
 

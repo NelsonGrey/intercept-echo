@@ -88,11 +88,21 @@ class _GameplayScreenState extends State<GameplayScreen> {
   int? _ticksRemaining;
   Timer? _clock;
 
+  /// Which place values (bit index 7 = 128 … 0 = 1) are shown under the
+  /// cells this round. Fixed for the round's lifetime — computed once here
+  /// rather than in a getter — so a mid-round rebuild (pausing, a wrong
+  /// Submit) can't reshuffle Normal's partial reveal out from under the
+  /// player.
+  late final Set<int> _visiblePlaceValues;
+
   @override
   void initState() {
     super.initState();
     _current = RegisterState(widget.challenge.initialBits);
     _movesRemaining = widget.challenge.moveBudget;
+    _visiblePlaceValues = _numberMode
+        ? widget.services.difficulty.visiblePlaceValues(widget.challenge.id)
+        : const {};
     widget.services.ads.preloadInterstitial();
     if (widget.challenge.clocked) {
       _ticksRemaining = ticksPerCycle;
@@ -138,10 +148,6 @@ class _GameplayScreenState extends State<GameplayScreen> {
   }
 
   bool get _numberMode => widget.challenge.targetStyle == TargetStyle.number;
-
-  /// Place values under the cells: number puzzles in Easy mode only.
-  bool get _showPlaceValues =>
-      _numberMode && widget.services.difficulty.showsPlaceValues;
 
   /// Count chapter: tapping a cell flips it and costs one move.
   void _toggle(int index) {
@@ -683,9 +689,11 @@ class _GameplayScreenState extends State<GameplayScreen> {
                               final on = _current.bitAt(index);
                               return Semantics(
                                 button: true,
-                                // Hard mode hides place values on screen,
-                                // so screen readers name cells by position.
-                                label: _showPlaceValues
+                                // A cell whose place value isn't shown on
+                                // screen is named by position instead, so
+                                // Hard (and Normal's hidden cells) don't
+                                // give the value away to a screen reader.
+                                label: _visiblePlaceValues.contains(index)
                                     ? 'Cell worth ${1 << index}, '
                                           'currently ${on ? 1 : 0}'
                                     : 'Cell ${8 - index} of 8, '
@@ -714,22 +722,25 @@ class _GameplayScreenState extends State<GameplayScreen> {
                     _Gutter(spilled: _lastSpillRight, left: false, palette: p),
                   ],
                 ),
-                if (_showPlaceValues) ...[
+                if (_visiblePlaceValues.isNotEmpty) ...[
                   const SizedBox(height: 6),
-                  // Easy mode: place values, so players see what each cell
-                  // adds. Hard mode leaves them to the player.
+                  // Easy shows every place value; Normal shows a handful
+                  // that vary by puzzle, so the player has to reason out
+                  // the rest; Hard leaves them all to the player.
                   ExcludeSemantics(
                     child: _inset(
-                      _cellRow(
-                        (i) => Text(
-                          '${1 << (7 - i)}',
+                      _cellRow((i) {
+                        final index = 7 - i;
+                        final visible = _visiblePlaceValues.contains(index);
+                        return Text(
+                          visible ? '${1 << index}' : '',
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                             color: p.textMuted,
                           ),
-                        ),
-                      ),
+                        );
+                      }),
                     ),
                   ),
                 ],

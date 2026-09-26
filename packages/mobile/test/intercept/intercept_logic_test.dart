@@ -5,6 +5,7 @@ import 'package:shift_register_arcade/intercept/intercept_run.dart';
 import 'package:shift_register_arcade/intercept/puzzle_factory.dart';
 import 'package:shift_register_arcade/intercept/transmission.dart';
 import 'package:shift_register_arcade/domain/solver.dart';
+import 'package:shift_register_arcade/settings/difficulty_setting.dart';
 
 void main() {
   group('Cipher', () {
@@ -113,12 +114,23 @@ void main() {
 
     test('Hard mode scores cracked letters x1.5, costs after', () {
       // (100 + 20) x 1.5 = 180, minus a 1-point Test.
-      run.recordCrack('S', spareMoves: 1, pointsSpent: 1, hard: true);
+      run.recordCrack(
+        'S',
+        spareMoves: 1,
+        pointsSpent: 1,
+        difficulty: Difficulty.hard,
+      );
       expect(run.totalScore, 179);
     });
 
+    test('Normal mode scores cracked letters x1.25', () {
+      // 100 x 1.25 = 125.
+      run.recordCrack('S', spareMoves: 0, difficulty: Difficulty.normal);
+      expect(run.totalScore, 125);
+    });
+
     test('the early-guess bonus is not multiplied', () {
-      run.recordCrack('S', spareMoves: 0, hard: true);
+      run.recordCrack('S', spareMoves: 0, difficulty: Difficulty.hard);
       final before = run.totalScore;
       final hidden = run.hiddenLetters.length;
       run.guess('SIGNAL FOUND');

@@ -10,6 +10,7 @@ AppServices fakeServices() => AppServices(
   entitlement: FakeEntitlementService(),
   ads: FakeAdService(),
   auth: FakePlatformGameAuthService(),
+  openUrl: (_) async {},
 );
 
 void main() {
@@ -224,6 +225,31 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('128'), findsNothing);
     expect(find.bySemanticsLabel('Cell 4 of 8, currently 0'), findsOneWidget);
-    expect(services.difficulty.showsPlaceValues, isFalse);
+    expect(services.difficulty.visiblePlaceValues('anything'), isEmpty);
+  });
+
+  testWidgets('Normal shows some cell values, not all, not none', (
+    tester,
+  ) async {
+    await openBoard(tester);
+    await tester.tap(find.byTooltip('Menu'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Settings'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.text('Normal'), 100);
+    await tester.tap(find.text('Normal'));
+    await tester.pumpAndSettle();
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getString('gameplay.difficulty'), 'normal');
+
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Play'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Crack next letter'));
+    await tester.pumpAndSettle();
+
+    final worthFinder = find.bySemanticsLabel(RegExp(r'^Cell worth \d+,'));
+    expect(worthFinder.evaluate().length, inInclusiveRange(3, 5));
   });
 }

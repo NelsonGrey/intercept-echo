@@ -5,9 +5,10 @@ import '../app/app_services.dart';
 import '../settings/difficulty_setting.dart';
 import '../theme/game_theme.dart';
 
-/// Settings: the gameplay palette (Appearance) and the relaxed clock
-/// (Accessibility). A non-gameplay screen, so it carries the banner like
-/// every other menu (SRA-BR-015).
+/// Settings: the gameplay palette (Appearance), difficulty, the ad-removal
+/// purchase (Purchases), and the relaxed clock (Accessibility). A
+/// non-gameplay screen, so it carries the banner like every other menu
+/// (SRA-BR-015).
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key, required this.services});
 
@@ -53,6 +54,14 @@ class SettingsScreen extends StatelessWidget {
                       ),
                     ),
                     RadioListTile<Difficulty>(
+                      value: Difficulty.normal,
+                      title: Text('Normal'),
+                      subtitle: Text(
+                        'Shows a few cell values — which ones changes every '
+                        'round. Cracked letters score ×1.25',
+                      ),
+                    ),
+                    RadioListTile<Difficulty>(
                       value: Difficulty.hard,
                       title: Text('Hard'),
                       subtitle: Text(
@@ -63,6 +72,9 @@ class SettingsScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
+              const _SectionHeader('Purchases'),
+              _PurchaseSection(entitlement: services.entitlement),
+              const SizedBox(height: 16),
               const _SectionHeader('Accessibility'),
               SwitchListTile(
                 title: const Text('Relaxed clock'),
@@ -70,11 +82,139 @@ class SettingsScreen extends StatelessWidget {
                 value: services.relaxedClock.value,
                 onChanged: services.relaxedClock.set,
               ),
+              const SizedBox(height: 16),
+              const _SectionHeader('Legal'),
+              _LegalLink(
+                label: 'Privacy Policy',
+                url: legalUrls.privacy,
+                openUrl: services.openUrl,
+              ),
+              _LegalLink(
+                label: 'Terms of Use',
+                url: legalUrls.terms,
+                openUrl: services.openUrl,
+              ),
+              _LegalLink(
+                label: 'Support',
+                url: legalUrls.support,
+                openUrl: services.openUrl,
+              ),
             ],
           ),
         ),
       ),
     );
+  }
+}
+
+/// Where this game's Privacy/Terms/Support pages live. Shift-Register has
+/// no marketing site of its own (unlike Modulo Squares, which has a
+/// separate site/repo/domain) — these are lightweight pages on the Nelson
+/// Grey site instead; see docs/STORE_SETUP.md.
+class _LegalUrls {
+  const _LegalUrls();
+
+  static const _base = 'https://nelsongrey.com/games/shift-register-arcade';
+
+  Uri get privacy => Uri.parse('$_base/privacy');
+  Uri get terms => Uri.parse('$_base/terms');
+  Uri get support => Uri.parse('$_base/support');
+}
+
+const legalUrls = _LegalUrls();
+
+class _LegalLink extends StatelessWidget {
+  const _LegalLink({
+    required this.label,
+    required this.url,
+    required this.openUrl,
+  });
+
+  final String label;
+  final Uri url;
+  final UrlOpener openUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      title: Text(label),
+      trailing: const Icon(Icons.open_in_new, size: 18),
+      onTap: () => openUrl(url),
+    );
+  }
+}
+
+/// Ad-free status, the one-time "Remove Ads" purchase (SRA-BR-007: a
+/// single $2.99 IAP, matching Modulo Squares), and Restore Purchases.
+/// [EntitlementService] isn't a [Listenable] — it reports changes on
+/// [EntitlementService.adFreeChanges] instead — so this rebuilds off a
+/// [StreamBuilder], seeded with the already-loaded [isAdFree] value.
+class _PurchaseSection extends StatelessWidget {
+  const _PurchaseSection({required this.entitlement});
+
+  final EntitlementService entitlement;
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<bool>(
+      stream: entitlement.adFreeChanges,
+      initialData: entitlement.isAdFree,
+      builder: (context, snapshot) {
+        final adFree = snapshot.data ?? false;
+        return Column(
+          children: [
+            ListTile(
+              leading: Icon(
+                adFree ? Icons.check_circle_outline : Icons.tv_off_outlined,
+              ),
+              title: Text(adFree ? 'Ad-free' : 'Ads on'),
+              subtitle: Text(
+                adFree
+                    ? 'You will never see an ad in this game.'
+                    : 'A banner and the occasional interstitial support '
+                          'free play.',
+              ),
+            ),
+            if (!adFree)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+                child: FilledButton(
+                  onPressed: () => _purchase(context),
+                  child: const Text('Remove Ads — \$2.99'),
+                ),
+              ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+              child: OutlinedButton(
+                onPressed: () => _restore(context),
+                child: const Text('Restore Purchases'),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _purchase(BuildContext context) async {
+    try {
+      await entitlement.purchaseAdRemoval();
+      // The store's own payment sheet handles the flow from here; a
+      // completed purchase arrives through adFreeChanges above.
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+      );
+    }
+  }
+
+  Future<void> _restore(BuildContext context) async {
+    await entitlement.restore();
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Purchases restored.')));
   }
 }
 

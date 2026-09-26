@@ -9,11 +9,12 @@ import 'package:shift_register_arcade/theme/game_theme.dart';
 // Real UMP/AdMob/IAP services need platform plugin channels a widget test
 // doesn't have, so every test here injects the Fake* services (matching
 // game-shell's own testing guidance) rather than booting the real ones.
-AppServices fakeServices() => AppServices(
+AppServices fakeServices({UrlOpener? openUrl}) => AppServices(
   consent: FakeConsentService(),
   entitlement: FakeEntitlementService(),
   ads: FakeAdService(),
   auth: FakePlatformGameAuthService(),
+  openUrl: openUrl ?? (_) async {},
 );
 
 void main() {
@@ -252,6 +253,52 @@ void main() {
       expect(services.relaxedClock.value, isTrue);
       final prefs = await SharedPreferences.getInstance();
       expect(prefs.getBool('accessibility.relaxedClock'), isTrue);
+    });
+
+    testWidgets('Remove Ads purchases the ad-free entitlement', (tester) async {
+      final services = fakeServices();
+      await tester.pumpWidget(ShiftRegisterArcadeApp(services: services));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Settings'));
+      await tester.pumpAndSettle();
+
+      final button = find.widgetWithText(FilledButton, 'Remove Ads — \$2.99');
+      await tester.scrollUntilVisible(button, 100);
+      await tester.pumpAndSettle();
+      expect(find.text('Ads on'), findsOneWidget);
+      await tester.tap(button);
+      await tester.pumpAndSettle();
+
+      expect(services.entitlement.isAdFree, isTrue);
+      expect(find.text('Ad-free'), findsOneWidget);
+      expect(
+        find.widgetWithText(FilledButton, 'Remove Ads — \$2.99'),
+        findsNothing,
+      );
+    });
+
+    testWidgets("Legal links open the game's Privacy/Terms/Support pages", (
+      tester,
+    ) async {
+      final opened = <Uri>[];
+      final services = fakeServices(openUrl: (url) async => opened.add(url));
+      await tester.pumpWidget(ShiftRegisterArcadeApp(services: services));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Settings'));
+      await tester.pumpAndSettle();
+
+      for (final label in ['Privacy Policy', 'Terms of Use', 'Support']) {
+        final tile = find.widgetWithText(ListTile, label);
+        await tester.scrollUntilVisible(tile, 100);
+        await tester.pumpAndSettle();
+        await tester.tap(tile);
+      }
+
+      expect(opened, [
+        Uri.parse('https://nelsongrey.com/games/shift-register-arcade/privacy'),
+        Uri.parse('https://nelsongrey.com/games/shift-register-arcade/terms'),
+        Uri.parse('https://nelsongrey.com/games/shift-register-arcade/support'),
+      ]);
     });
   });
 

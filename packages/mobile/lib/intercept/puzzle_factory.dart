@@ -14,6 +14,12 @@ class PuzzleFactory {
   const PuzzleFactory._();
 
   static const _shiftOps = [OperationType.shiftLeft, OperationType.shiftRight];
+  static const _rotateShiftOps = [
+    OperationType.shiftLeft,
+    OperationType.shiftRight,
+    OperationType.rotateLeft,
+    OperationType.rotateRight,
+  ];
 
   static Challenge build({
     required int transmissionIndex,
@@ -29,6 +35,8 @@ class PuzzleFactory {
     final kind = switch (transmission.kind) {
       PuzzleKind.mixed =>
         letterIndex.isEven ? PuzzleKind.count : PuzzleKind.shift,
+      PuzzleKind.advanced =>
+        letterIndex.isEven ? PuzzleKind.count : PuzzleKind.rotateShift,
       final k => k,
     };
     final id = 't$transmissionIndex-$letter-$attempt';
@@ -56,28 +64,25 @@ class PuzzleFactory {
       );
     }
 
-    // Shift: pick a start whose shortest route to the target is two or
-    // three moves, so there is always something to plan. One spare move,
-    // since a failure costs a signal bar.
+    // Shift and rotateShift: pick a start whose shortest route to the
+    // target is two or three moves, so there is always something to plan.
+    // One spare move, since a failure costs a signal bar.
+    final ops = kind == PuzzleKind.rotateShift ? _rotateShiftOps : _shiftOps;
     final candidates = <int, int>{};
     for (var s = 1; s <= 0xFF; s++) {
       if (s == target) continue;
-      final d = shortestSolution(
-        start: s,
-        target: target,
-        operations: _shiftOps,
-      );
+      final d = shortestSolution(start: s, target: target, operations: ops);
       if (d != null && d >= 2 && d <= 3) candidates[s] = d;
     }
     final starts = candidates.keys.toList()..sort();
     final start = starts[random.nextInt(starts.length)];
     return Challenge(
       id: id,
-      chapter: 'Shift',
+      chapter: kind == PuzzleKind.rotateShift ? 'Rotate' : 'Shift',
       title: 'Crack the letter',
       initialBits: start,
       targetBits: target,
-      allowedOperations: _shiftOps,
+      allowedOperations: ops,
       moveBudget: candidates[start]! + 1,
       targetStyle: TargetStyle.number,
       clocked: transmission.clocked,

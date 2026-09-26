@@ -30,11 +30,12 @@ class _MessageBoardScreenState extends State<MessageBoardScreen> {
   Future<void> _crack(String letter) async {
     if (_busy || _run.status != TransmissionStatus.playing) return;
     _busy = true;
+    final puzzle = _run.puzzleFor(letter);
     final result = await Navigator.of(context).push<LetterResult>(
       MaterialPageRoute(
         builder: (_) => GameplayScreen(
           services: widget.services,
-          challenge: _run.puzzleFor(letter),
+          challenge: puzzle,
           letter: LetterContext(
             transmission: _run.current,
             revealed: _run.revealed,
@@ -51,7 +52,8 @@ class _MessageBoardScreenState extends State<MessageBoardScreen> {
         letter,
         spareMoves: result.spareMoves,
         pointsSpent: result.pointsSpent,
-        hard: !widget.services.difficulty.showsPlaceValues,
+        difficulty: widget.services.difficulty.value,
+        advanced: puzzle.chapter == 'Rotate',
       );
     }
     _busy = false;

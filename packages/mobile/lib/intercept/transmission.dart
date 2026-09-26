@@ -10,6 +10,15 @@ enum PuzzleKind {
 
   /// Alternates count and shift letter by letter.
   mixed,
+
+  /// Reach the number with Shift Left/Right and Rotate Left/Right — Rotate
+  /// wraps a bit around instead of losing it, so a route that would spill a
+  /// needed bit off the register can wrap it back in instead.
+  rotateShift,
+
+  /// Alternates count and rotateShift letter by letter — the escalation
+  /// once a player has shown they can shift reliably (see [transmissions]).
+  advanced,
 }
 
 /// One intercepted message: a short phrase whose letters are cracked by
@@ -49,7 +58,10 @@ class Transmission {
 
 /// The prototype campaign. Phrases are original to this game
 /// (SRA-BR-009). Transmission 4 tells the player the key has changed —
-/// from there each message uses its own shifted alphabet.
+/// from there each message uses its own shifted alphabet. Transmissions
+/// 6–8 give three messages of Shift practice inside `mixed` before Rotate
+/// is introduced; from transmission 9 on, `advanced` swaps `mixed`'s Shift
+/// half for Rotate + Shift, and scores a bonus for using it.
 const List<Transmission> transmissions = [
   Transmission(
     phrase: 'SIGNAL FOUND',
@@ -64,8 +76,12 @@ const List<Transmission> transmissions = [
   Transmission(phrase: 'BRING THE MAP', key: 7, kind: PuzzleKind.mixed),
   Transmission(phrase: 'THE TOWER IS DARK', key: 7, kind: PuzzleKind.mixed),
   Transmission(phrase: 'FOLLOW THE RIVER', key: 11, kind: PuzzleKind.mixed),
-  Transmission(phrase: 'WAIT FOR MY CALL', key: 11, kind: PuzzleKind.mixed),
-  Transmission(phrase: 'CODE BOOK LOST', key: 19, kind: PuzzleKind.mixed),
-  Transmission(phrase: 'TRUST NO SIGNAL', key: 19, kind: PuzzleKind.mixed),
-  Transmission(phrase: 'WE ARE ALMOST HOME', key: 23, kind: PuzzleKind.mixed),
+  Transmission(phrase: 'WAIT FOR MY CALL', key: 11, kind: PuzzleKind.advanced),
+  Transmission(phrase: 'CODE BOOK LOST', key: 19, kind: PuzzleKind.advanced),
+  Transmission(phrase: 'TRUST NO SIGNAL', key: 19, kind: PuzzleKind.advanced),
+  Transmission(
+    phrase: 'WE ARE ALMOST HOME',
+    key: 23,
+    kind: PuzzleKind.advanced,
+  ),
 ];

@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../content/challenge.dart';
+import '../settings/difficulty_setting.dart';
 import 'puzzle_factory.dart';
 import 'transmission.dart';
 
@@ -22,9 +23,20 @@ class InterceptScoring {
   /// free).
   static const testCost = 1;
 
-  /// Letters cracked in Hard mode (no place values shown) score this much
-  /// more, rounded down. The early-guess bonus is not multiplied.
-  static const hardMultiplier = 1.5;
+  /// Flat bonus for cracking a letter with Rotate as well as Shift — the
+  /// extra operations `advanced` transmissions unlock once a player has
+  /// shown they can shift reliably (see transmission.dart). Added before
+  /// the difficulty multiplier, like [perSpareMove].
+  static const advancedBonus = 40;
+
+  /// Letters cracked with fewer place values on screen score more, rounded
+  /// down — the harder the difficulty, the bigger the multiplier. The
+  /// early-guess bonus is never multiplied.
+  static const Map<Difficulty, double> crackMultiplier = {
+    Difficulty.easy: 1.0,
+    Difficulty.normal: 1.25,
+    Difficulty.hard: 1.5,
+  };
 }
 
 /// The player's progress through the Intercept campaign: which
@@ -96,17 +108,19 @@ class InterceptRun extends ChangeNotifier {
     String letter, {
     required int spareMoves,
     int pointsSpent = 0,
-    bool hard = false,
+    Difficulty difficulty = Difficulty.easy,
+    bool advanced = false,
   }) {
     if (_status != TransmissionStatus.playing || _revealed.contains(letter)) {
       return;
     }
     _revealed.add(letter);
     final earned =
-        InterceptScoring.perLetter + InterceptScoring.perSpareMove * spareMoves;
-    final scaled = hard
-        ? (earned * InterceptScoring.hardMultiplier).floor()
-        : earned;
+        InterceptScoring.perLetter +
+        InterceptScoring.perSpareMove * spareMoves +
+        (advanced ? InterceptScoring.advancedBonus : 0);
+    final scaled = (earned * InterceptScoring.crackMultiplier[difficulty]!)
+        .floor();
     // Net in one step, so Test costs are paid even from a score of 0.
     _award(scaled - pointsSpent);
     if (hiddenLetters.isEmpty) _status = TransmissionStatus.decoded;
