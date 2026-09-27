@@ -3,6 +3,7 @@
 /json/
 node_modules/
 packages/mobile/build/
+packages/mobile/test/failures/
 packages/mobile/.dart_tool/
 packages/mobile/.flutter-plugins*
 packages/mobile/ios/.bundle/

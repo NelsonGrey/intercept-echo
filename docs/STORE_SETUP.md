@@ -43,6 +43,21 @@ Play Console's Privacy Policy URL, below.
    - Price: Tier 3 ($2.99)
    - Validate on a real device in a TestFlight build: tapping "Remove Ads —
      $2.99" in Settings shows the StoreKit purchase sheet at the right price.
+4. AdMob console → app `com.interceptecho.app.ios` — **done**, real app/unit
+   IDs provisioned and wired into `lib/app/app_services.dart` and
+   `ios/Runner/Info.plist`'s `GADApplicationIdentifier`
+   (`ca-app-pub-5198775482699756~2223602919`; banner
+   `.../9715080120`, interstitial `.../6596204603`). Still open:
+   - **UMP consent message**: configure a GDPR/consent message for this
+     AdMob app in AdMob → Privacy & messaging — the code already calls
+     Google's UMP SDK before ads load, but the form has nothing to show
+     until a message is defined there.
+   - **app-ads.txt**: publish `google.com, pub-5198775482699756, DIRECT,
+     f08c47fec0942fa0` at `https://nelsongrey.com/app-ads.txt` (that's the
+     `nelson-grey` site repo, not this one — add it alongside the other
+     three apps' entries).
+   - Android stays on Google's shared test IDs
+     (`AdMobConfig`'s android* fields) until an Android AdMob app exists.
 
 ## Google Play Console
 

@@ -18,11 +18,21 @@ Future<void> _defaultOpenUrl(Uri url) => url_launcher.launchUrl(
   mode: url_launcher.LaunchMode.externalApplication,
 );
 
+/// Real AdMob app/unit IDs for `com.interceptecho.app.ios`, provisioned in
+/// the AdMob console (see docs/STORE_SETUP.md). Android IDs stay on
+/// Google's shared test values — Android testing hasn't resumed yet (see
+/// README status) — swap those in once an Android AdMob app exists.
+const _interceptEchoAdMobConfig = AdMobConfig(
+  androidAppId: 'ca-app-pub-3940256099942544~3347511713',
+  androidBannerId: 'ca-app-pub-3940256099942544/6300978111',
+  androidInterstitialId: 'ca-app-pub-3940256099942544/1033173712',
+  iosAppId: 'ca-app-pub-5198775482699756~2223602919',
+  iosBannerId: 'ca-app-pub-5198775482699756/9715080120',
+  iosInterstitialId: 'ca-app-pub-5198775482699756/6596204603',
+);
+
 /// Portfolio-standard game-shell services for this app, wired per the
-/// game-shell README's "Wiring order". Real AdMob IDs aren't provisioned
-/// yet (no Play Console / App Store Connect listing — see
-/// docs/STORE_SETUP.md), so this uses [AdMobConfig.test] for now; swap in
-/// this game's real config once those exist.
+/// game-shell README's "Wiring order".
 class AppServices {
   AppServices({
     ConsentService? consent,
@@ -43,7 +53,7 @@ class AppServices {
        entitlement =
            entitlement ??
            IapEntitlementService(adRemovalProductId: 'ad_removal'),
-       ads = ads ?? AdMobAdService(AdMobConfig.test()),
+       ads = ads ?? AdMobAdService(_interceptEchoAdMobConfig),
        auth = auth ?? _defaultAuth();
 
   final ConsentService consent;
