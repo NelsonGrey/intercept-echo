@@ -170,7 +170,7 @@ packages:
     source: git
     version: "0.4.0"
   games_services:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: games_services
       sha256: ee42b3b1a86fc20f27ccd383f8c32d1a0297cd6afd121c8827d2b946118c3507

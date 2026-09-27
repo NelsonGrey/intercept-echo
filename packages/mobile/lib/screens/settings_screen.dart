@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:game_shell/game_shell.dart';
 
 import '../app/app_services.dart';
+import '../gamecenter/game_center_progress_service.dart';
 import '../settings/difficulty_setting.dart';
 import '../theme/game_theme.dart';
 
@@ -41,7 +44,15 @@ class SettingsScreen extends StatelessWidget {
               RadioGroup<Difficulty>(
                 groupValue: services.difficulty.value,
                 onChanged: (d) {
-                  if (d != null) services.difficulty.set(d);
+                  if (d == null) return;
+                  services.difficulty.set(d);
+                  if (d == Difficulty.hard) {
+                    unawaited(
+                      services.progress.unlockAchievement(
+                        GameCenterIds.achievementHardDifficulty,
+                      ),
+                    );
+                  }
                 },
                 child: const Column(
                   children: [
@@ -70,6 +81,18 @@ class SettingsScreen extends StatelessWidget {
                     ),
                   ],
                 ),
+              ),
+              const SizedBox(height: 16),
+              const _SectionHeader('Game Center'),
+              ListTile(
+                leading: const Icon(Icons.leaderboard),
+                title: const Text('Leaderboard'),
+                onTap: services.progress.showLeaderboard,
+              ),
+              ListTile(
+                leading: const Icon(Icons.emoji_events),
+                title: const Text('Achievements'),
+                onTap: services.progress.showAchievements,
               ),
               const SizedBox(height: 16),
               const _SectionHeader('Purchases'),

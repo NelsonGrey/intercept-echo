@@ -11,6 +11,7 @@ import '../content/clock.dart';
 import '../domain/operation_type.dart';
 import '../domain/register_engine.dart';
 import '../domain/register_state.dart';
+import '../gamecenter/game_center_progress_service.dart';
 import '../intercept/intercept_run.dart';
 import '../intercept/message_view.dart';
 import '../theme/game_theme.dart';
@@ -263,6 +264,17 @@ class _GameplayScreenState extends State<GameplayScreen> {
     if (_resolved) return;
     _resolved = true;
     _clock?.cancel();
+    if (won && widget.letter == null) {
+      final movesUsed = widget.challenge.moveBudget - _movesRemaining;
+      if (PracticeScoring.scoreFor(widget.challenge, movesUsed) ==
+          PracticeScoring.perfectScore) {
+        unawaited(
+          widget.services.progress.unlockAchievement(
+            GameCenterIds.achievementPerfectShift,
+          ),
+        );
+      }
+    }
     setState(() => _outcome = _Outcome(won: won, timedOut: timedOut));
   }
 

@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:game_shell/game_shell.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intercept_echo/app/app_services.dart';
+import 'package:intercept_echo/gamecenter/fake_game_center_progress_service.dart';
+import 'package:intercept_echo/gamecenter/game_center_progress_service.dart';
 import 'package:intercept_echo/main.dart';
 
 AppServices fakeServices() => AppServices(
@@ -10,6 +12,7 @@ AppServices fakeServices() => AppServices(
   entitlement: FakeEntitlementService(),
   ads: FakeAdService(),
   auth: FakePlatformGameAuthService(),
+  progress: FakeGameCenterProgressService(),
   openUrl: (_) async {},
 );
 
@@ -216,6 +219,11 @@ void main() {
     await tester.pumpAndSettle();
     final prefs = await SharedPreferences.getInstance();
     expect(prefs.getString('gameplay.difficulty'), 'hard');
+    final progress = services.progress as FakeGameCenterProgressService;
+    expect(
+      progress.unlockedAchievements,
+      contains(GameCenterIds.achievementHardDifficulty),
+    );
 
     await tester.pageBack();
     await tester.pumpAndSettle();

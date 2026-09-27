@@ -3,6 +3,9 @@ import 'dart:io';
 import 'package:game_shell/game_shell.dart';
 import 'package:url_launcher/url_launcher.dart' as url_launcher;
 
+import '../gamecenter/fake_game_center_progress_service.dart';
+import '../gamecenter/game_center_progress_service.dart';
+import '../gamecenter/games_services_progress_service.dart';
 import '../intercept/intercept_run.dart';
 import '../settings/difficulty_setting.dart';
 import '../settings/relaxed_clock_setting.dart';
@@ -39,13 +42,13 @@ class AppServices {
     EntitlementService? entitlement,
     AdService? ads,
     PlatformGameAuthService? auth,
+    GameCenterProgressService? progress,
     ThemeController? theme,
     RelaxedClockSetting? relaxedClock,
     InterceptRun? intercept,
     DifficultySetting? difficulty,
     UrlOpener? openUrl,
   }) : difficulty = difficulty ?? DifficultySetting(),
-       intercept = intercept ?? InterceptRun(),
        theme = theme ?? ThemeController(),
        relaxedClock = relaxedClock ?? RelaxedClockSetting(),
        openUrl = openUrl ?? _defaultOpenUrl,
@@ -54,7 +57,10 @@ class AppServices {
            entitlement ??
            IapEntitlementService(adRemovalProductId: 'ad_removal'),
        ads = ads ?? AdMobAdService(_interceptEchoAdMobConfig),
-       auth = auth ?? _defaultAuth();
+       auth = auth ?? _defaultAuth(),
+       progress = progress ?? _defaultProgress(),
+       intercept =
+           intercept ?? InterceptRun(progress: progress ?? _defaultProgress());
 
   final ConsentService consent;
   final EntitlementService entitlement;
@@ -68,6 +74,15 @@ class AppServices {
       (Platform.isIOS || Platform.isMacOS)
       ? GameCenterAuthService()
       : FakePlatformGameAuthService();
+
+  /// Leaderboard/achievements/cloud save, same iOS/macOS-only story as
+  /// [auth] — see [GameCenterProgressService].
+  final GameCenterProgressService progress;
+
+  static GameCenterProgressService _defaultProgress() =>
+      (Platform.isIOS || Platform.isMacOS)
+      ? GamesServicesProgressService()
+      : FakeGameCenterProgressService();
 
   /// The player's gameplay palette. Not a game-shell service — it lives
   /// here so every screen reaches it the same way.

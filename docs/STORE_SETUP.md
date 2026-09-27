@@ -58,6 +58,37 @@ Play Console's Privacy Policy URL, below.
      three apps' entries).
    - Android stays on Google's shared test IDs
      (`AdMobConfig`'s android* fields) until an Android AdMob app exists.
+5. App Store Connect → Features → Game Center → app `com.interceptecho.app.ios`
+   — enable Game Center, then create these records (IDs must match
+   `lib/gamecenter/game_center_progress_service.dart`'s `GameCenterIds`
+   exactly — the code references them by ID, nothing here is auto-created):
+   - **Leaderboard** (Classic, higher score is better): ID
+     `intercept_echo_total_score`
+   - **Achievements** (five, no ordering requirement):
+     - `intercept_echo_first_transmission` — "First Contact" or similar:
+       decode the campaign's first transmission
+     - `intercept_echo_campaign_complete` — decode every transmission in
+       the campaign
+     - `intercept_echo_used_rotate` — crack a letter using Rotate as well
+       as Shift
+     - `intercept_echo_hard_difficulty` — switch to Hard difficulty in
+       Settings
+     - `intercept_echo_perfect_shift` — solve a Shift-chapter Practice
+       puzzle in par moves (see `PracticeScoring`)
+   - Also enables Game Center's cloud-saved games (`SaveGame`), used for
+     cross-device campaign-progress sync — no separate ASC configuration
+     for that beyond Game Center being on.
+   - The Xcode project's Game Center *capability* (the
+     `com.apple.developer.game-center` entitlement) was previously
+     missing entirely — `ios/Runner/Runner.entitlements` now has it. Without
+     it, `GameCenterAuthService.signIn()` (and everything downstream of it)
+     was failing silently every time, caught by the empty `catch` in
+     `AppServices.initialize()`.
+   - Validate all of this on a real device signed into Game Center in a
+     TestFlight build: Settings → Leaderboard/Achievements should open
+     Game Center's native UI: cracking a letter should eventually pop the
+     achievement banners; reinstalling the app on a second device signed
+     into the same Game Center account should pick up campaign progress.
 
 ## Google Play Console
 
