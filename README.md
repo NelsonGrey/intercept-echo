@@ -1,5 +1,16 @@
 # Intercept Echo
 
+[![CI](https://github.com/NelsonGrey/intercept-echo/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/NelsonGrey/intercept-echo/actions/workflows/ci.yml) [![License](https://img.shields.io/badge/license-proprietary-lightgrey.svg)](https://github.com/NelsonGrey/intercept-echo/blob/develop/LICENSE)
+
+## Contents
+
+- [Status](#status)
+- [Repository Structure](#repository-structure)
+- [Deliverables](#deliverables)
+- [Store setup still required manually](#store-setup-still-required-manually)
+- [Legal/support pages](#legalsupport-pages)
+- [Getting Started](#getting-started)
+
 Flutter monorepo. No custom backend: sign-in, leaderboards, achievements,
 and cloud save go through each platform's own game-services layer (Game
 Center on iOS; Play Games Services on Android, once testing resumes) rather
@@ -42,7 +53,7 @@ history) that the fakes-only unit tests couldn't have found.
 submission BUSINESS_REQUIREMENTS.md calls for, and gameplay analytics
 (SRA-BR-012).
 
-## Layout
+## Repository Structure
 
 - `packages/mobile` — Flutter client (iOS + Android). Depends on [game-shell](https://github.com/NelsonGrey/game-shell) for auth, ads, consent, and the ad-removal entitlement — see that repo before reimplementing any of those.
 
@@ -68,14 +79,10 @@ has a separate site/repo/domain). Privacy/Terms/Support live on the Nelson
 Grey site instead, under `games/intercept-echo/` in the
 `nelson-grey` repo — see `docs/STORE_SETUP.md` for the URLs.
 
-## Getting started
+## Getting Started
 
 ```bash
 cd packages/mobile
 flutter pub get
 flutter run
 ```
-
-## License
-
-See [LICENSE](LICENSE). Security issues: see [SECURITY.md](SECURITY.md).
