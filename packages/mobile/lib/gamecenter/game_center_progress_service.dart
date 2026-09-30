@@ -8,8 +8,7 @@ class GameCenterIds {
 
   static const achievementFirstTransmission =
       'intercept_echo_first_transmission';
-  static const achievementCampaignComplete =
-      'intercept_echo_campaign_complete';
+  static const achievementCampaignComplete = 'intercept_echo_campaign_complete';
   static const achievementUsedRotate = 'intercept_echo_used_rotate';
   static const achievementHardDifficulty = 'intercept_echo_hard_difficulty';
   static const achievementPerfectShift = 'intercept_echo_perfect_shift';

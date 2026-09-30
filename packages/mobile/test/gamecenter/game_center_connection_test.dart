@@ -1,3 +1,7 @@
+import 'dart:async';
+
+import 'package:fake_async/fake_async.dart';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:game_shell/game_shell.dart';
 import 'package:intercept_echo/gamecenter/connection_gated_progress_service.dart';
@@ -9,6 +13,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 class _FailingAuth extends FakePlatformGameAuthService {
   @override
   Future<AppUser> signIn() async => throw StateError('no account');
+}
+
+class _HangingAuth extends FakePlatformGameAuthService {
+  final completer = Completer<AppUser>();
+  @override
+  Future<AppUser> signIn() => completer.future;
 }
 
 void main() {
@@ -85,6 +95,27 @@ void main() {
       await c.connect();
       expect(c.status, GameCenterStatus.unavailable);
     });
+
+    test(
+      'a sign-in that never returns times out, then recovers if it lands',
+      () {
+        fakeAsync((async) {
+          final auth = _HangingAuth();
+          final c = GameCenterConnection(auth: auth, supported: true);
+          c.connect();
+          async.flushMicrotasks();
+          expect(c.status, GameCenterStatus.connecting);
+
+          async.elapse(GameCenterConnection.signInTimeout);
+          expect(c.status, GameCenterStatus.unavailable);
+
+          auth.completer.complete(const AppUser(uid: 'p', displayName: 'Late'));
+          async.flushMicrotasks();
+          expect(c.status, GameCenterStatus.connected);
+          expect(c.playerName, 'Late');
+        });
+      },
+    );
 
     test('unsupported platform never connects or prompts', () async {
       final c = GameCenterConnection(

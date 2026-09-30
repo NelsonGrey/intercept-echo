@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:game_shell/game_shell.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -102,20 +104,43 @@ class GameCenterConnection extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// How long to wait for Game Center before giving up. The platform call
+  /// doesn't return until the player finishes signing in, so with no account
+  /// on the device (or a dismissed sheet) it would otherwise never return.
+  static const signInTimeout = Duration(seconds: 20);
+
   Future<void> _signIn() async {
     _status = GameCenterStatus.connecting;
     notifyListeners();
+    final attempt = _auth.signIn();
     try {
-      final user = await _auth.signIn();
-      _playerName = user.displayName;
-      _status = GameCenterStatus.connected;
-      notifyListeners();
-      await onConnected?.call();
+      await _markConnected(await attempt.timeout(signInTimeout));
+    } on TimeoutException {
+      _markUnavailable();
+      // If the player does finish signing in later, pick it up.
+      unawaited(
+        attempt
+            .then((user) async {
+              if (_enabled && !isConnected) await _markConnected(user);
+            })
+            .catchError((_) {}),
+      );
     } catch (_) {
-      _playerName = null;
-      _status = GameCenterStatus.unavailable;
-      notifyListeners();
+      _markUnavailable();
     }
+  }
+
+  Future<void> _markConnected(AppUser user) async {
+    _playerName = user.displayName;
+    _status = GameCenterStatus.connected;
+    notifyListeners();
+    await onConnected?.call();
+  }
+
+  void _markUnavailable() {
+    _playerName = null;
+    _status = GameCenterStatus.unavailable;
+    notifyListeners();
   }
 
   Future<void> _save() async {
