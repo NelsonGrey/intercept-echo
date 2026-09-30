@@ -24,10 +24,7 @@ enum GameCenterStatus {
 /// Game Center has no programmatic sign-out, so [disconnect] only makes
 /// this game stop using it; the player manages the account in iOS Settings.
 class GameCenterConnection extends ChangeNotifier {
-  GameCenterConnection({
-    required PlatformGameAuthService auth,
-    required this.supported,
-  }) : _auth = auth;
+  GameCenterConnection({required this._auth, required this.supported});
 
   /// Test/preview stand-in that is already connected as "Test Player",
   /// with no persistence.
