@@ -12,6 +12,14 @@
 
 require 'shellwords'
 
+# App Review / TestFlight contact details come from CI secrets, never the
+# repo — this repository is public.
+def required_env(name)
+  value = ENV[name].to_s.strip
+  UI.user_error!("#{name} is not set — add it as a GitHub Actions secret.") if value.empty?
+  value
+end
+
 default_platform(:ios)
 
 platform :ios do
@@ -212,7 +220,7 @@ platform :ios do
       api_key: app_store_api_key,
       ipa: ipa_path,
       skip_waiting_for_build_processing: true,
-      beta_app_feedback_email: ENV["BETA_FEEDBACK_EMAIL"] || "REDACTED_EMAIL",
+      beta_app_feedback_email: required_env("BETA_FEEDBACK_EMAIL"),
       # Required once per app before Apple allows distributing to an
       # EXTERNAL testing group (distribute_external: true below) — the
       # build otherwise uploads fine and only the final distribute step
@@ -221,10 +229,10 @@ platform :ios do
         "puzzle: shift, rotate, and transform bit patterns to crack intercepted " \
         "transmissions before the clock runs out.",
       beta_app_review_info: {
-        contact_email: ENV["BETA_FEEDBACK_EMAIL"] || "REDACTED_EMAIL",
+        contact_email: required_env("BETA_FEEDBACK_EMAIL"),
         contact_first_name: "Mark",
         contact_last_name: "Nelson",
-        contact_phone: ENV["BETA_CONTACT_PHONE"].to_s.strip.empty? ? "REDACTED_PHONE" : ENV["BETA_CONTACT_PHONE"],
+        contact_phone: required_env("BETA_CONTACT_PHONE"),
         notes: "No account required — sign-in via Game Center is optional and never blocks play."
       },
       changelog: "Automated TestFlight build from CI/CD pipeline",
@@ -247,8 +255,8 @@ platform :ios do
       app_review_information: {
         first_name: "Mark",
         last_name: "Nelson",
-        phone_number: ENV["BETA_CONTACT_PHONE"].to_s.strip.empty? ? "REDACTED_PHONE" : ENV["BETA_CONTACT_PHONE"],
-        email_address: ENV["BETA_FEEDBACK_EMAIL"] || "REDACTED_EMAIL",
+        phone_number: required_env("BETA_CONTACT_PHONE"),
+        email_address: required_env("BETA_FEEDBACK_EMAIL"),
         notes: "No account or demo credentials needed — the full game (Practice and " \
           "the Intercept campaign) is playable with no sign-in. Game Center sign-in " \
           "is offered but optional and never blocks play."
@@ -278,8 +286,8 @@ platform :ios do
       app_review_information: {
         first_name: "Mark",
         last_name: "Nelson",
-        phone_number: ENV["BETA_CONTACT_PHONE"].to_s.strip.empty? ? "REDACTED_PHONE" : ENV["BETA_CONTACT_PHONE"],
-        email_address: ENV["BETA_FEEDBACK_EMAIL"] || "REDACTED_EMAIL",
+        phone_number: required_env("BETA_CONTACT_PHONE"),
+        email_address: required_env("BETA_FEEDBACK_EMAIL"),
         notes: "No account or demo credentials needed — the full game (Practice and " \
           "the Intercept campaign) is playable with no sign-in. Game Center sign-in " \
           "is offered but optional and never blocks play."
