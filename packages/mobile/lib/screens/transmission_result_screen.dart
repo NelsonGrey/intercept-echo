@@ -159,6 +159,19 @@ class TransmissionResultScreen extends StatelessWidget {
                               ),
                             ),
                           ),
+                        ListenableBuilder(
+                          listenable: services.connection,
+                          builder: (context, _) =>
+                              services.connection.isConnected
+                              ? TextButton.icon(
+                                  onPressed: services.progress.showLeaderboard,
+                                  icon: const Icon(Icons.leaderboard),
+                                  label: const Text(
+                                    'Score posted to Game Center · Leaderboard',
+                                  ),
+                                )
+                              : const SizedBox.shrink(),
+                        ),
                       ],
                     ),
                   ),

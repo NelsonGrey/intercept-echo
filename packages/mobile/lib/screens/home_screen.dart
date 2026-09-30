@@ -2,15 +2,34 @@ import 'package:flutter/material.dart';
 import 'package:game_shell/game_shell.dart';
 
 import 'challenge_select_screen.dart';
+import 'game_center_widgets.dart';
 import 'message_board_screen.dart';
 import 'settings_screen.dart';
 import '../app/app_services.dart';
 import '../theme/intercept_echo_brand.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key, required this.services});
 
   final AppServices services;
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  AppServices get services => widget.services;
+
+  @override
+  void initState() {
+    super.initState();
+    // First visit only: offer Game Center once, after the screen is up.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && services.connection.shouldPrompt) {
+        showGameCenterPrompt(context, services.connection);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -102,6 +121,8 @@ class HomeScreen extends StatelessWidget {
                           ),
                         ],
                       ),
+                      const SizedBox(height: 8),
+                      GameCenterBadge(services: services),
                       const Spacer(),
                     ],
                   ),

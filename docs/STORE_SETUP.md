@@ -75,7 +75,10 @@ Play Console's Privacy Policy URL, below.
        Settings
      - `intercept_echo_perfect_shift` — solve a Shift-chapter Practice
        puzzle in par moves (see `PracticeScoring`)
-   - Also enables Game Center's cloud-saved games (`SaveGame`), used for
+   - The game only signs in after the player opts in (first-run prompt,
+    home-screen badge, or Settings > Game Center). Reviewers can play the
+    whole game without it.
+  - Also enables Game Center's cloud-saved games (`SaveGame`), used for
      cross-device campaign-progress sync — no separate ASC configuration
      for that beyond Game Center being on.
    - The Xcode project's Game Center *capability* (the

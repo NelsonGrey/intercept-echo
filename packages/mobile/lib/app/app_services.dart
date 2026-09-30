@@ -3,7 +3,9 @@ import 'dart:io';
 import 'package:game_shell/game_shell.dart';
 import 'package:url_launcher/url_launcher.dart' as url_launcher;
 
+import '../gamecenter/connection_gated_progress_service.dart';
 import '../gamecenter/fake_game_center_progress_service.dart';
+import '../gamecenter/game_center_connection.dart';
 import '../gamecenter/game_center_progress_service.dart';
 import '../gamecenter/games_services_progress_service.dart';
 import '../intercept/intercept_run.dart';
@@ -43,6 +45,7 @@ class AppServices {
     AdService? ads,
     PlatformGameAuthService? auth,
     GameCenterProgressService? progress,
+    GameCenterConnection? connection,
     ThemeController? theme,
     RelaxedClockSetting? relaxedClock,
     InterceptRun? intercept,
@@ -57,10 +60,18 @@ class AppServices {
            entitlement ??
            IapEntitlementService(adRemovalProductId: 'ad_removal'),
        ads = ads ?? AdMobAdService(_interceptEchoAdMobConfig),
+       _injectedIntercept = intercept,
        auth = auth ?? _defaultAuth(),
-       progress = progress ?? _defaultProgress(),
-       intercept =
-           intercept ?? InterceptRun(progress: progress ?? _defaultProgress());
+       progressBackend = progress ?? _defaultProgress() {
+    this.connection =
+        connection ??
+        GameCenterConnection(auth: this.auth, supported: _gcSupported);
+    this.progress = ConnectionGatedProgressService(
+      progressBackend,
+      this.connection,
+    );
+    this.connection.onConnected = _onGameCenterConnected;
+  }
 
   final ConsentService consent;
   final EntitlementService entitlement;
@@ -75,9 +86,20 @@ class AppServices {
       ? GameCenterAuthService()
       : FakePlatformGameAuthService();
 
-  /// Leaderboard/achievements/cloud save, same iOS/macOS-only story as
-  /// [auth] — see [GameCenterProgressService].
-  final GameCenterProgressService progress;
+  static bool get _gcSupported => Platform.isIOS || Platform.isMacOS;
+
+  /// Whether the player has opted in to Game Center, and whether it's live.
+  /// Nothing talks to Game Center until they connect.
+  late final GameCenterConnection connection;
+
+  /// The real (or fake) Game Center calls, same iOS/macOS-only story as
+  /// [auth]. Always reach them through [progress], which honors the
+  /// player's choice.
+  final GameCenterProgressService progressBackend;
+
+  /// Leaderboard/achievements/cloud save, active only while [connection] is
+  /// connected — see [GameCenterProgressService].
+  late final ConnectionGatedProgressService progress;
 
   static GameCenterProgressService _defaultProgress() =>
       (Platform.isIOS || Platform.isMacOS)
@@ -94,8 +116,11 @@ class AppServices {
   /// Easy shows cell place values; Hard hides them.
   final DifficultySetting difficulty;
 
+  final InterceptRun? _injectedIntercept;
+
   /// Campaign progress through the Intercept transmissions.
-  final InterceptRun intercept;
+  late final InterceptRun intercept =
+      _injectedIntercept ?? InterceptRun(progress: progress);
 
   /// Opens the Privacy/Terms/Support links in Settings.
   final UrlOpener openUrl;
@@ -113,18 +138,22 @@ class AppServices {
     await consent.requestConsent();
     await entitlement.restore();
 
-    // Best-effort: a failed/declined platform sign-in (e.g. no Game Center
-    // account on this device) shouldn't block the app from starting.
-    try {
-      await auth.signIn();
-    } catch (_) {
-      // Swallowed deliberately — see comment above.
-    }
+    // Only reconnects a player who already opted in; a failed sign-in (e.g.
+    // no Game Center account on this device) lands in
+    // GameCenterStatus.unavailable and never blocks the app from starting.
+    await connection.load();
 
     if (consent.canRequestAds) {
       await ads.initialize();
     }
     ads.setAdFree(entitlement.isAdFree);
     entitlement.adFreeChanges.listen(ads.setAdFree);
+  }
+
+  /// After each Game Center sign-in: grant achievements earned while
+  /// disconnected, then merge the cloud save and push the current score.
+  Future<void> _onGameCenterConnected() async {
+    await progress.flushEarned();
+    await intercept.syncWithGameCenter();
   }
 }

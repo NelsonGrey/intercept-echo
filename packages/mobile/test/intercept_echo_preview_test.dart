@@ -5,6 +5,7 @@ import 'package:game_shell/game_shell.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intercept_echo/app/app_services.dart';
 import 'package:intercept_echo/gamecenter/fake_game_center_progress_service.dart';
+import 'package:intercept_echo/gamecenter/game_center_connection.dart';
 import 'package:intercept_echo/main.dart';
 
 AppServices _services() => AppServices(
@@ -12,6 +13,7 @@ AppServices _services() => AppServices(
   entitlement: FakeEntitlementService(),
   ads: FakeAdService(),
   auth: FakePlatformGameAuthService(),
+  connection: GameCenterConnection.connectedFake(),
   progress: FakeGameCenterProgressService(),
   openUrl: (_) async {},
 );

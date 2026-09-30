@@ -51,9 +51,11 @@ class InterceptScoring {
 /// score. The transmission index and total score persist; the state of a
 /// half-decoded message does not (a relaunch restarts that message).
 class InterceptRun extends ChangeNotifier {
-  InterceptRun({List<Transmission>? campaign, GameCenterProgressService? progress})
-    : campaign = campaign ?? transmissions,
-      _progress = progress ?? _defaultProgress();
+  InterceptRun({
+    List<Transmission>? campaign,
+    GameCenterProgressService? progress,
+  }) : campaign = campaign ?? transmissions,
+       _progress = progress ?? _defaultProgress();
 
   static GameCenterProgressService _defaultProgress() =>
       (Platform.isIOS || Platform.isMacOS)
@@ -128,6 +130,17 @@ class InterceptRun extends ChangeNotifier {
     } catch (_) {
       // Malformed/foreign save data — ignore, keep local.
     }
+  }
+
+  /// Called when the player connects to Game Center: merges the cloud save
+  /// (restarting the current message only if that moved the player to a
+  /// different transmission) and pushes the local score and progress up.
+  Future<void> syncWithGameCenter() async {
+    final before = _index;
+    await _reconcileCloudProgress();
+    if (_index != before) _resetMessage();
+    _persist();
+    notifyListeners();
   }
 
   /// "Crack next letter": the first hidden letter in reading order.
@@ -225,9 +238,7 @@ class InterceptRun extends ChangeNotifier {
   void _onTransmissionDecoded() {
     if (_index == 0) {
       unawaited(
-        _progress.unlockAchievement(
-          GameCenterIds.achievementFirstTransmission,
-        ),
+        _progress.unlockAchievement(GameCenterIds.achievementFirstTransmission),
       );
     }
   }

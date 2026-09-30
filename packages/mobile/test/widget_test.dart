@@ -4,6 +4,7 @@ import 'package:game_shell/game_shell.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intercept_echo/app/app_services.dart';
 import 'package:intercept_echo/gamecenter/fake_game_center_progress_service.dart';
+import 'package:intercept_echo/gamecenter/game_center_connection.dart';
 import 'package:intercept_echo/gamecenter/game_center_progress_service.dart';
 import 'package:intercept_echo/main.dart';
 import 'package:intercept_echo/theme/game_theme.dart';
@@ -16,6 +17,7 @@ AppServices fakeServices({UrlOpener? openUrl}) => AppServices(
   entitlement: FakeEntitlementService(),
   ads: FakeAdService(),
   auth: FakePlatformGameAuthService(),
+  connection: GameCenterConnection.connectedFake(),
   progress: FakeGameCenterProgressService(),
   openUrl: openUrl ?? (_) async {},
 );
@@ -112,7 +114,7 @@ void main() {
     await tester.tap(find.text('Achievements'));
     await tester.pumpAndSettle();
 
-    final progress = services.progress as FakeGameCenterProgressService;
+    final progress = services.progressBackend as FakeGameCenterProgressService;
     expect(progress.showLeaderboardCount, 1);
     expect(progress.showAchievementsCount, 1);
   });
@@ -243,7 +245,8 @@ void main() {
       await tester.tap(find.text('Shift Left'));
       await tester.pumpAndSettle();
       expect(find.text('Target Matched'), findsOneWidget);
-      final progress = services.progress as FakeGameCenterProgressService;
+      final progress =
+          services.progressBackend as FakeGameCenterProgressService;
       expect(
         progress.unlockedAchievements,
         contains(GameCenterIds.achievementPerfectShift),
