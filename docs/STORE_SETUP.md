@@ -127,8 +127,6 @@ just re-entered here — GitHub secrets aren't shared across repos):
 - `APP_STORE_CONNECT_KEY_ID`, `APP_STORE_CONNECT_ISSUER_ID`,
   `APP_STORE_CONNECT_KEY` (the `.p8` key content)
 - `FASTLANE_APPLE_ID`, `FASTLANE_ITC_TEAM_ID`, `FASTLANE_TEAM_ID`
-- `GAME_SHELL_TOKEN` (already required by `ci.yml`; the release workflow
-  needs it too, to resolve the private `game_shell` pub dependency)
 
 Two GitHub Environments gate the workflow (already created:
 `ios-testflight`, ungated; `ios-appstore`, meant to require a reviewer

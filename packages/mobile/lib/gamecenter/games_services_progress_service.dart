@@ -6,7 +6,7 @@ import 'game_center_progress_service.dart';
 
 /// Real [GameCenterProgressService], backed by Game Center via the
 /// `games_services` plugin's static Leaderboards/Achievements/SaveGame
-/// APIs. iOS/macOS only, matching `GameCenterAuthService` in game_shell —
+/// APIs. iOS/macOS only, matching `GameCenterAuthService` in lib/shell/auth —
 /// Android would need its own Play Games project and a second set of
 /// leaderboard/achievement IDs, which don't exist yet (see README status).
 class GamesServicesProgressService implements GameCenterProgressService {

@@ -46,8 +46,8 @@ Privacy/Terms/Support pages, hosted on the Nelson Grey site (see below).
 Verified both with `flutter test` (register engine exhaustively tested over
 all 256 byte values; every Intercept puzzle machine-checked solvable within
 its move budget) and by actually running on an iOS Simulator with the real
-AdMob service — that live run caught a real crash (see `game-shell`'s
-history) that the fakes-only unit tests couldn't have found.
+AdMob service — that live run caught a real crash that the fakes-only unit tests couldn't
+have found.
 
 **Not built yet:** the endless score mode and per-platform leaderboard
 submission BUSINESS_REQUIREMENTS.md calls for, and gameplay analytics
@@ -55,7 +55,7 @@ submission BUSINESS_REQUIREMENTS.md calls for, and gameplay analytics
 
 ## Repository Structure
 
-- `packages/mobile` — Flutter client (iOS + Android). Depends on [game-shell](https://github.com/NelsonGrey/game-shell) for auth, ads, consent, and the ad-removal entitlement — see that repo before reimplementing any of those.
+- `packages/mobile` — Flutter client (iOS + Android). Carries its own ads, consent, ad-removal entitlement, and Game Center sign-in under `lib/shell/` (originally from the game-shell starter, now maintained here).
 
 Bundle/package ID base: `com.interceptecho`
 

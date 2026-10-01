@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:game_shell/game_shell.dart';
+import '../shell/shell.dart';
 
 import '../app/app_services.dart';
 import '../gamecenter/game_center_connection.dart';

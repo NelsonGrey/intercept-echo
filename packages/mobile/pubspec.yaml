@@ -31,13 +31,12 @@ dependencies:
   flutter:
     sdk: flutter
 
-  game_shell:
-    git:
-      url: https://github.com/NelsonGrey/game-shell.git
-      ref: main
+  # Ads, consent, the ad-removal purchase and Game Center sign-in (lib/shell/).
+  google_mobile_ads: ^9.0.0
+  in_app_purchase: ^3.3.0
 
-  # Leaderboard/achievement/cloud-save calls (lib/gamecenter/) — game_shell
-  # only re-exports GameCenterAuthService (sign-in), not these APIs.
+  # Sign-in, leaderboard, achievement and cloud-save calls (lib/shell/auth/,
+  # lib/gamecenter/).
   games_services: ^5.3.0
 
   # Persists the chosen gameplay palette (lib/theme/theme_controller.dart).

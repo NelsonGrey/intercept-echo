@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:game_shell/game_shell.dart';
+import '../shell/shell.dart';
 
 import 'challenge_select_screen.dart';
 import 'game_center_widgets.dart';

@@ -27,8 +27,8 @@ class InterceptEchoApp extends StatefulWidget {
     : _injectedServices = services;
 
   /// Tests inject fakes here instead of letting the real
-  /// UMP/AdMob/IAP services run — see game-shell's README: "Widget tests
-  /// should construct the Fake* services directly."
+  /// UMP/AdMob/IAP services run: widget tests should construct the Fake*
+  /// services directly.
   final AppServices? _injectedServices;
 
   @override

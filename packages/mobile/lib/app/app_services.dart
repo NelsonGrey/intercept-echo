@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:game_shell/game_shell.dart';
+import '../shell/shell.dart';
 import 'package:url_launcher/url_launcher.dart' as url_launcher;
 
 import '../gamecenter/connection_gated_progress_service.dart';
@@ -36,8 +36,8 @@ const _interceptEchoAdMobConfig = AdMobConfig(
   iosInterstitialId: 'ca-app-pub-5198775482699756/6596204603',
 );
 
-/// Portfolio-standard game-shell services for this app, wired per the
-/// game-shell README's "Wiring order".
+/// The app's services (ads, consent, purchases, Game Center, settings),
+/// wired in dependency order by [initialize].
 class AppServices {
   AppServices({
     ConsentService? consent,
@@ -106,7 +106,7 @@ class AppServices {
       ? GamesServicesProgressService()
       : FakeGameCenterProgressService();
 
-  /// The player's gameplay palette. Not a game-shell service — it lives
+  /// The player's gameplay palette. Not a platform service — it lives
   /// here so every screen reaches it the same way.
   final ThemeController theme;
 

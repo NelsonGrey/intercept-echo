@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:game_shell/game_shell.dart';
+import 'package:intercept_echo/shell/shell.dart';
 import 'package:intercept_echo/app/app_services.dart';
 import 'package:intercept_echo/gamecenter/fake_game_center_progress_service.dart';
 import 'package:intercept_echo/gamecenter/game_center_connection.dart';

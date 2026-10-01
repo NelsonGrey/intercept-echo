@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:game_shell/game_shell.dart';
+import '../shell/shell.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 enum GameCenterStatus {
