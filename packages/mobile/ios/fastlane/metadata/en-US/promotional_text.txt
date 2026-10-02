@@ -1,0 +1,1 @@
+Shift, rotate, and transform an eight-bit register to crack intercepted transmissions before the clock runs out.

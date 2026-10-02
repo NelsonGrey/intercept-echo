@@ -1,55 +1,70 @@
-# Shift-Register Arcade
+# Intercept Echo
 
-Flutter + Firebase monorepo, following the same architecture pattern as
-Modulo Squares.
+[![CI](https://github.com/NelsonGrey/intercept-echo/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/NelsonGrey/intercept-echo/actions/workflows/ci.yml) [![License](https://img.shields.io/badge/license-proprietary-lightgrey.svg)](https://github.com/NelsonGrey/intercept-echo/blob/develop/LICENSE)
+
+## Contents
+
+- [Status](#status)
+- [Repository Structure](#repository-structure)
+- [Deliverables](#deliverables)
+- [Store setup still required manually](#store-setup-still-required-manually)
+- [Legal/support pages](#legalsupport-pages)
+- [Getting Started](#getting-started)
+
+Flutter monorepo. No custom backend: sign-in, leaderboards, achievements,
+and cloud save go through each platform's own game-services layer (Game
+Center on iOS; Play Games Services on Android, once testing resumes) rather
+than a shared Firebase project like the portfolio's earlier games.
+
+Renamed from the working title "Shift-Register Arcade" once
+`com.interceptecho.app.ios` was accepted in App Store Connect; "shift
+register" now refers only to the underlying register mechanic, not the
+product name.
 
 Related docs: [Business Requirements](./docs/BUSINESS_REQUIREMENTS.md) ·
 [Technical Requirements](./docs/TECHNICAL_REQUIREMENTS.md)
 
 ## Status
 
-First playable vertical slice: the register domain engine (`lib/domain/`,
-exhaustively tested over all 256 byte values), 7 hand-authored challenges
-across the Move/Preserve/Transform chapters (`lib/content/` — not the full
-40 SRA-BR-005 calls for yet), and Home/Select/Gameplay/Results screens
-wired to `game-shell`'s ad/consent/entitlement services. Verified both with
-`flutter test` and by actually running on an iOS Simulator with the real
-AdMob service — that live run caught a real crash (see `game-shell`'s
-history) that the fakes-only unit tests couldn't have found.
+The core loop is **Intercept**: register puzzles crack the letters of a
+hangman-style coded message, one campaign transmission at a time (no level
+list to pick from — see `lib/intercept/`). 12 authored transmissions escalate
+from Count (tap cells to a target number) through Shift (reach it by
+doubling/halving) to Rotate + Shift once a player has had practice with
+Shift alone. Cracking or losing a letter costs/awards signal bars and
+points; guessing the whole message early banks a bonus. A `lib/content/`
+"Practice" mode with the original Move/Preserve/Transform-style challenges
+still exists for ad hoc testing, but Intercept is the game.
 
-## Layout
+Three difficulty levels (Easy/Normal/Hard) trade how many of the register's
+place values are shown for a score multiplier. The one-time "Remove Ads"
+purchase ($2.99, matching Modulo Squares) is wired end-to-end — entitlement,
+ads, and a Settings screen button — pending only the store-side product
+creation (see `docs/STORE_SETUP.md`). Settings also links out to the game's
+Privacy/Terms/Support pages, hosted on the Nelson Grey site (see below).
 
-- `packages/mobile` — Flutter client (iOS + Android). Depends on [game-shell](https://github.com/NelsonGrey/game-shell) for auth, ads, consent, and the ad-removal entitlement — see that repo before reimplementing any of those.
-- `packages/functions` — Firebase Cloud Functions (Node 22 / TypeScript)
-- `packages/firestore-rules` — Firestore security rules
-- `packages/web` — landing page (Firebase Hosting)
-- `firebase-config/` — downloaded per-environment Firebase config files (gitignored)
+Verified both with `flutter test` (register engine exhaustively tested over
+all 256 byte values; every Intercept puzzle machine-checked solvable within
+its move budget) and by actually running on an iOS Simulator with the real
+AdMob service — that live run caught a real crash that the fakes-only unit tests couldn't
+have found.
 
-## Firebase projects
+**Not built yet:** the endless score mode and per-platform leaderboard
+submission BUSINESS_REQUIREMENTS.md calls for, and gameplay analytics
+(SRA-BR-012).
 
-| Env     | Project ID              |
-| ------- | ------------------------ |
-| dev     | `shift-register-arcade-dev`     |
-| staging | `shift-register-arcade-staging` |
-| prod    | `shift-register-arcade-prod`    |
+## Repository Structure
 
-Bundle/package ID base: `com.shiftregisterarcade`
+- `packages/mobile` — Flutter client (iOS + Android). Carries its own ads, consent, ad-removal entitlement, and Game Center sign-in under `lib/shell/` (originally from the game-shell starter, now maintained here).
+
+Bundle/package ID base: `com.interceptecho`
 
 ## Deliverables
 
-Each game in this portfolio ships three deliverables:
-
 | Deliverable | Platform | Identifier | Status |
 | --- | --- | --- | --- |
-| Android app | Google Play | `com.shiftregisterarcade.app.android` | Firebase-registered; Play Console listing not yet created (see [docs/STORE_SETUP.md](docs/STORE_SETUP.md)) |
-| iOS app | Apple App Store Connect | `com.shiftregisterarcade.app.ios` | Firebase-registered; ASC app record not yet created (see [docs/STORE_SETUP.md](docs/STORE_SETUP.md)) |
-| Website | Firebase Hosting | `shift-register-arcade-{env}.web.app` | **Dev live**; staging/prod configured, not yet deployed |
-
-Website URLs (redeploy with `firebase deploy --only hosting --project <env>`, or run the equivalent Hosting REST API calls if `firebase login` has not been done on this machine):
-
-- Dev: https://shift-register-arcade-dev.web.app &mdash; **live**
-- Staging: https://shift-register-arcade-staging.web.app &mdash; not yet deployed
-- Prod: https://shift-register-arcade-prod.web.app &mdash; not yet deployed
+| Android app | Google Play | `com.interceptecho.app.android` | Kept buildable; no tester group yet, Play Console listing not yet created (see [docs/STORE_SETUP.md](docs/STORE_SETUP.md)) |
+| iOS app | Apple App Store Connect | `com.interceptecho.app.ios` | Bundle ID accepted in App Store Connect; app record not yet created (see [docs/STORE_SETUP.md](docs/STORE_SETUP.md)) |
 
 ## Store setup still required manually
 
@@ -57,16 +72,17 @@ Google Play Console and Apple App Store Connect have no public API for
 **creating a brand-new app listing** — that first step has to happen in
 each console's UI. See `docs/STORE_SETUP.md` for the exact values to enter.
 
-## Getting started
+## Legal/support pages
+
+This project has no marketing site of its own (unlike Modulo Squares, which
+has a separate site/repo/domain). Privacy/Terms/Support live on the Nelson
+Grey site instead, under `games/intercept-echo/` in the
+`nelson-grey` repo — see `docs/STORE_SETUP.md` for the URLs.
+
+## Getting Started
 
 ```bash
 cd packages/mobile
-cp ../../firebase-config/google-services.dev.json android/app/google-services.json
-cp ../../firebase-config/GoogleService-Info.dev.plist ios/Runner/GoogleService-Info.plist
 flutter pub get
 flutter run
 ```
-
-## License
-
-See [LICENSE](LICENSE). Security issues: see [SECURITY.md](SECURITY.md).

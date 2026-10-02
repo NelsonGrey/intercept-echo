@@ -1,9 +1,9 @@
-# Shift-Register Arcade — Technical Requirements
+# Intercept Echo — Technical Requirements
 
 **Document type:** Technical Requirements Document (TRD)  
-**Version:** 0.1  
+**Version:** 0.3 — renamed to Intercept Echo (`com.interceptecho.app.ios`/`.android`)  
 **Status:** Proposed / architecture discovery  
-**Last updated:** August 11, 2026  
+**Last updated:** September 26, 2026  
 **Owner:** Mark Nelson
 
 Related document: [Business Requirements](./BUSINESS_REQUIREMENTS.md)  
@@ -27,10 +27,10 @@ The document authorizes neither a specific framework nor production implementati
 - Local settings, save data, and aggregate statistics.
 - Audio, haptic, animation, and accessibility presentation layers.
 - Privacy-minimized analytics and crash reporting behind build-time configuration.
-- Ad SDK integration (AdMob): persistent top banner on every non-gameplay screen (including pause), plus one interstitial per completed/exited challenge on the way back to a non-gameplay screen, gated behind a consent (GDPR/UMP, App Tracking Transparency) flow. Never shown during active target resolution, never gating the start of a challenge, never on ordinary menu navigation.
-- Firebase Authentication (Google/Apple sign-in) gating access to gameplay, matching the portfolio's account-required access model.
-- Cloud Firestore sync for progress, statistics, and leaderboard scores, with local caching for offline play between sync points.
-- Global leaderboard for endless-mode score, backed by Firestore with server-side-enforced security rules.
+- Ad SDK integration (AdMob): persistent top banner on every non-gameplay screen (including pause), plus one interstitial per completed/lost Intercept transmission (not per letter) on the way back to a non-gameplay screen, gated behind a consent (GDPR/UMP, App Tracking Transparency) flow. Never shown during active target resolution, never gating the start of a puzzle, never on ordinary menu navigation.
+- Platform game-services sign-in (Game Center on iOS; Play Games Services on Android, once testing resumes) gating access to gameplay, matching the portfolio's account-required access model. No custom backend.
+- Local persistence for progress, statistics, and settings, with the platform's own leaderboard/achievement services holding the account-scoped online state.
+- Per-platform leaderboard for endless-mode score, submitted through Game Center (iOS) / Play Games Services (Android) rather than a custom server.
 - Store purchase integration for the single ad-removal entitlement.
 
 ### Excluded from MVP
@@ -81,7 +81,11 @@ Every operation must be a pure deterministic state transition. Visual effects ma
 
 ## 4. Content model
 
-Authored challenges shall be schema-validated data rather than hard-coded screens. A challenge definition must include:
+There are two content sources, both funneling into the same `Challenge` shape (`lib/content/challenge.dart`) the simulation and screens consume:
+
+### 4.1 Practice challenges
+
+A small hand-authored set (`ChallengeRepository`) for ad hoc testing outside the campaign. A challenge definition must include:
 
 - Stable challenge ID and content-schema version.
 - Initial register and target state.
@@ -92,7 +96,11 @@ Authored challenges shall be schema-validated data rather than hard-coded screen
 - Expected minimum solution length where known.
 - Designer test vectors or reference solution.
 
-Content loading must reject invalid bit widths, impossible operation references, duplicate IDs, unsupported schema versions, and challenges without a valid completion path. A solver or bounded reachability check should validate authored challenges during CI.
+These are still Dart literals rather than schema-validated external data (the schema-validated-data vision above is not yet built), so content loading has no format to reject invalid entries against yet; a solver-based test (`challenge_solvability_test.dart`) instead checks every entry is solvable within its budget, and this must keep running in CI.
+
+### 4.2 Intercept transmissions
+
+The campaign's actual content unit. A `Transmission` (`lib/intercept/transmission.dart`) is authored data — a phrase, a cipher key, a puzzle kind (Count/Shift/Rotate+Shift/mixed/advanced), and whether it's clocked — but its per-letter `Challenge`s are not authored directly: `PuzzleFactory` generates one deterministically from the transmission, the letter, and a retry-attempt counter, choosing a start state whose shortest solution (via the same BFS solver used for reachability checks) sits in a difficulty-appropriate move-count band. This means Intercept content validation is a property to test across every transmission and letter — every generated puzzle must be solvable within its move budget — rather than a fixed list to schema-check; `puzzle_factory_solvability_test.dart` is this check and must keep running in CI alongside 4.1's.
 
 ## 5. Input and presentation
 
@@ -137,14 +145,14 @@ The simulation must be runnable in headless unit tests. Platform integrations mu
 | SRA-TR-013 | Purchase failure, cancellation, pending status, restore, and offline entitlement states shall be handled without losing progression.                  | SRA-BR-007             |
 | SRA-TR-014 | Builds shall expose content and ruleset versions in diagnostics without exposing secrets or personal data.                                            | SRA-BR-004, SRA-BR-012 |
 | SRA-TR-015 | The ad layer shall be hidden behind an interface with a deterministic fake for tests, shall load consent state before any ad request, shall suppress all ad units when the ad-removal entitlement is active, and shall enforce a minimum interval between interstitials so accidental extra calls cannot spam ads.                     | SRA-BR-007, SRA-BR-015 |
-| SRA-TR-016 | Gameplay shall be gated behind Google/Apple sign-in via Firebase Auth; unauthenticated users shall see only the sign-in flow. | SRA-BR-006 |
-| SRA-TR-017 | Progress and leaderboard scores shall sync to Cloud Firestore under user-scoped security rules, with rate-limited score submission and offline-cached local fallback. | SRA-BR-016 |
+| SRA-TR-016 | Gameplay shall be gated behind platform game-services sign-in (Game Center on iOS; Play Games Services on Android, once testing resumes); unauthenticated users shall see only the sign-in flow. | SRA-BR-006 |
+| SRA-TR-017 | Endless-mode scores shall submit to the platform's own leaderboard service (Game Center/Play Games Services), with local caching for offline play and no custom backend involved. | SRA-BR-016 |
 
 ## 8. Persistence
 
-Local persistence shall include content progress, best scores, tutorial state, settings, aggregate statistics, purchased-entitlement cache, and the most recent interrupted run if restoration is supported.
+Local persistence shall include content progress, best scores, tutorial state, settings, aggregate statistics, purchased-entitlement cache, and the most recent interrupted run if restoration is supported. There is no custom backend or cross-device sync of this local state.
 
-Progress, statistics, and leaderboard scores sync to Cloud Firestore under a `users/{userId}/` document (`profile`, `gameState`, `achievements`) plus a `leaderboards/global/scores/{scoreId}` collection (`userId`, `playerName`, `score`, `timestamp`), matching Modulo Squares' schema. Firestore security rules shall enforce user-scoped read/write access and rate-limit score submissions. Local caching keeps the game playable offline between sync points; sync conflicts resolve by keeping the higher score / latest progress rather than silently overwriting.
+Endless-mode scores submit directly to the platform's leaderboard service (Game Center on iOS; Play Games Services on Android, once testing resumes), which owns score storage, ranking, and any cross-device consistency on that platform. Leaderboards are per-platform and not unified across iOS and Android. Local caching keeps score submission resilient to offline play; a cached score submits on the next successful connection.
 
 The game shall never silently reset progress after a schema change. Corrupt data handling must retain a recoverable backup where feasible, start from safe defaults, and present an understandable recovery message.
 
@@ -159,7 +167,7 @@ The minimum event catalog should include:
 - Endless run start/end and score band.
 - Purchase screen viewed and platform purchase outcome if applicable.
 - Ad impression and click events (aggregate SDK-reported events only, no custom cross-app tracking).
-- Sign-in method and outcome (Google/Apple).
+- Sign-in method and outcome (Game Center/Play Games Services).
 - Leaderboard view and submission events.
 - Accessibility setting enabled.
 
@@ -174,7 +182,7 @@ Analytics must be disableable by distribution or consent policy. Gameplay must n
 - Replay determinism tests across supported platforms.
 - Integration tests for pause, resume, interruption, save migration, purchase restore, and offline launch.
 - Ad-layer tests: consent flow, ad load failure/fallback, and entitlement-based ad suppression using the deterministic fake.
-- Integration tests for sign-in flow, Firestore sync (including conflict resolution), and leaderboard submission/rate-limiting.
+- Integration tests for platform sign-in flow and leaderboard submission, using each platform's deterministic fake.
 - Accessibility tests for screen readers, switch/tap-only input, reduced motion, contrast, and audio-disabled play.
 - Device tests across a documented low-, mid-, and high-performance matrix for iOS and Android.
 
@@ -191,4 +199,3 @@ Production release requires:
 - Privacy disclosures reconciled with the final SDK and telemetry behavior.
 - Store purchase and restore flows verified with store-distributed test builds for the ad-removal entitlement.
 - Ad content and placement reviewed against Google Play and Apple App Store ad policies, with consent flow verified for GDPR/UMP and App Tracking Transparency.
-- Firestore security rules reviewed and tested (user-scoped access, score-submission rate limiting).

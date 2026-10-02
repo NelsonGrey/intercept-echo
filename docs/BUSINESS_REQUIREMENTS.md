@@ -1,11 +1,11 @@
-# Shift-Register Arcade — Business Requirements
+# Intercept Echo — Business Requirements
 
 **Document type:** Business Requirements Document (BRD)  
-**Version:** 0.1  
+**Version:** 0.3 — renamed to Intercept Echo (`com.interceptecho.app.ios` accepted in App Store Connect)  
 **Status:** Proposed / discovery  
-**Last updated:** August 11, 2026  
+**Last updated:** September 26, 2026  
 **Owner:** Mark Nelson  
-**Working concept:** Shift-register arcade; no final product title selected
+**Working title:** Intercept Echo — internal engine name "shift-register" retained for the underlying mechanic only
 
 Related document: [Technical Requirements](./TECHNICAL_REQUIREMENTS.md)  
 Portfolio context: [Requirements Index](../../PORTFOLIO_REQUIREMENTS_INDEX.md)
@@ -72,16 +72,16 @@ The game must not require prior knowledge of binary, hexadecimal, programming, o
 The MVP must include:
 
 - A fixed-width eight-bit register presented as eight clearly distinct cells.
-- Left shift and right shift as the initial operations.
-- Rotate and one carefully introduced mask operation after basic mastery.
-- Incoming target patterns and a visible clock or deadline.
-- A strategic overflow resource tied directly to bits leaving the register.
-- A guided onboarding sequence with no required reading beyond short action prompts.
-- At least 40 authored challenges across four mechanic chapters.
-- One endless score mode with deterministic difficulty progression.
+- Left shift and right shift as the initial operations; Rotate joins them once a player has shown they can shift reliably.
+- **Intercept:** the core loop. The player is never shown a list of levels to pick from — instead, a chained campaign of intercepted transmissions (short coded phrases) is revealed one letter at a time, hangman style, by solving register puzzles. Failing or abandoning a letter costs a signal bar; running out of bars loses the transmission (retryable from scratch). Guessing the full message before every letter is cracked banks an early bonus. A cipher key change partway through the campaign forces the player to work the key out from letters already cracked, rather than reading it off a fixed chart.
+- Incoming targets are numbers the register must equal, not just bit patterns — this is what makes Count (toggle cells to the number), Shift (reach it by doubling/halving), and Rotate+Shift (reach it once Rotate is unlocked) legible as distinct, escalating mechanics, with a visible clock or move budget per puzzle.
+- A strategic overflow resource tied directly to bits leaving the register, available where Shift/Rotate puzzles spill bits off the register.
+- A guided onboarding sequence with no required reading beyond short action prompts (the campaign's first transmissions are unclocked and start from an empty register).
+- Enough authored transmissions, and enough distinct letters within them, for a full campaign playthrough with a real difficulty curve — not a flat count of interchangeable levels, since Intercept's content unit is the transmission, not the individual puzzle.
+- One endless score mode with deterministic difficulty progression, reusing the Count/Shift/Rotate+Shift puzzle generation Intercept already has.
 - Local progression, settings, statistics, and achievement-like milestones.
-- Account sign-in (Google or Apple) required before the first challenge; a complete experience thereafter that stays playable offline between sync points, with progress and leaderboard scores syncing to the cloud when connected.
-- A global leaderboard for endless-mode score, backed by cloud sync.
+- Platform sign-in (Game Center on iOS; Play Games Services on Android, once testing resumes) required before the first transmission, with no custom backend — the platform's own identity, save, and leaderboard services hold the account state.
+- A per-platform leaderboard for endless-mode score, backed by Game Center on iOS and Play Games Services on Android. Leaderboards are siloed per platform, not unified across them.
 
 Daily challenges, social sharing, additional bit widths, signed arithmetic, and a level editor are post-MVP candidates.
 
@@ -93,8 +93,8 @@ Daily challenges, social sharing, additional bit widths, signed arithmetic, and 
 | SRA-BR-002 | A new player shall be able to complete the first target without knowing binary terminology.                                       | Must     | At least 80% first-task completion in moderated usability tests     |
 | SRA-BR-003 | Overflow shall create a meaningful resource or scoring decision and shall not be a cosmetic effect.                               | Must     | Design rules and playtest evidence showing at least two viable uses |
 | SRA-BR-004 | Every failed target shall display the operation history and the visible reason for failure.                                       | Must     | Failure-state acceptance test                                       |
-| SRA-BR-005 | The MVP shall provide at least 40 authored challenges and one replayable endless mode.                                            | Must     | Content inventory and completed release build                       |
-| SRA-BR-006 | Players shall sign in with Google or Apple before the first challenge; the signed-in session shall then support offline play with progress syncing when connectivity returns.           | Must     | Sign-in and offline-sync end-to-end test                            |
+| SRA-BR-005 | The MVP shall provide a full Intercept campaign (enough transmissions, and enough distinct letters within them, to carry a real difficulty curve — Count, then Shift, then Rotate+Shift) plus one replayable endless mode.                                            | Must     | Content inventory and completed release build                       |
+| SRA-BR-006 | Players shall sign in via the platform's game-services identity (Game Center on iOS; Play Games Services on Android, once testing resumes) before the first transmission; the signed-in session shall then support offline play, with no custom backend involved.           | Must     | Platform sign-in end-to-end test                            |
 | SRA-BR-007 | The commercial model shall be free-to-play with banner and interstitial advertising, plus a one-time purchase that removes all ads. | Must   | Approved pricing and store-product configuration                    |
 | SRA-BR-008 | The game shall present technical names only after the corresponding operation has been learned visually.                          | Should   | Tutorial/content review                                             |
 | SRA-BR-009 | The visual, audio, UI, code, writing, and level content shall be original or supported by retained license records.               | Must     | Asset provenance register and release audit                         |
@@ -103,27 +103,47 @@ Daily challenges, social sharing, additional bit widths, signed arithmetic, and 
 | SRA-BR-012 | Product analytics shall measure comprehension and retention without requiring personally identifying information.                 | Should   | Approved event catalog and privacy review                           |
 | SRA-BR-013 | Core information shall remain understandable without color or audio.                                                              | Must     | Accessibility review and test evidence                              |
 | SRA-BR-014 | Store materials shall describe the game as entertainment first and shall not claim guaranteed educational outcomes.               | Must     | Store-listing review                                                |
-| SRA-BR-015 | Free players shall see a persistent banner ad on every non-gameplay screen, including the pause overlay, and one interstitial ad when a challenge ends and the player returns to a non-gameplay screen. Ads shall never appear during active target resolution, shall never gate the start of a challenge, and shall never fire on ordinary menu navigation. | Must | Ad-placement review and playtest evidence |
-| SRA-BR-016 | Logged-in players shall be able to view a global leaderboard and submit scores from endless-mode score; paid (ad-removal) players retain full access. | Must | Leaderboard integration test |
+| SRA-BR-015 | Free players shall see a persistent banner ad on every non-gameplay screen, including the pause overlay, and one interstitial ad when a transmission is decoded or lost and the player returns to a non-gameplay screen (never once per letter — Intercept's "challenge" unit is the transmission, and firing an interstitial per letter would be far too frequent). Ads shall never appear during active target resolution, shall never gate the start of a puzzle, and shall never fire on ordinary menu navigation. | Must | Ad-placement review and playtest evidence |
+| SRA-BR-016 | Logged-in players shall be able to view their platform's leaderboard and submit endless-mode scores to it; paid (ad-removal) players retain full access. | Must | Platform leaderboard integration test |
 
 ## 8. Progression and content strategy
 
-### Proposed chapters
+Progression is a chained campaign of transmissions (see §6, Intercept),
+not a level-select chapter grid. Each transmission is a short phrase; each
+of its distinct letters is cracked by one register puzzle, hangman style,
+so a repeated letter (once cracked) never has to be solved twice.
 
-1. **Move:** left/right shifts and boundary loss.
-2. **Preserve:** rotate operations and planning across multiple targets.
-3. **Transform:** one mask operation introduced through visual cause and effect.
-4. **Overclock:** mixed operations, shorter cycles, and strategic overflow use.
+### Mechanic progression within the campaign
 
-Each challenge should introduce or combine one idea. Repetition should come from score optimization and execution quality rather than duplicated levels with larger numbers.
+1. **Count:** tap register cells to reach the letter's number. The
+   opening transmissions start unclocked, from an empty register, so the
+   first few letters teach place value with nothing else to manage.
+2. **Shift:** reach the number using only Shift Left (×2) and Shift Right
+   (÷2) — introduced once Count is established, and mixed back in
+   alongside it letter-by-letter afterward so neither mechanic goes stale.
+3. **Rotate + Shift:** once a player has had several transmissions of
+   Shift practice, later transmissions add Rotate Left/Right alongside
+   Shift — a bit that would spill off the register under Shift alone can
+   instead be wrapped back in under Rotate, so the added operation
+   changes the planning, not just the button count. Cracking a letter
+   this way scores a bonus on top of the base per-letter score.
+
+A cipher key change partway through the campaign is the other axis of
+difficulty: the player can no longer read a cracked letter's number
+straight off a fixed A=1 chart, and has to infer the shifted alphabet from
+letters already cracked.
+
+Repetition should come from score optimization (spare moves, guessing the
+message early, the difficulty-level score multiplier) and execution
+quality rather than duplicated puzzles with larger numbers.
 
 ## 9. Monetization hypothesis
 
 The game follows the portfolio's standard financial model, matching Modulo Squares: free-to-play with advertising, plus a one-time purchase that removes all ads.
 
-- **Free tier:** the complete game, supported by a persistent banner ad (top of screen) on every non-gameplay screen — menu, chapter/challenge select, settings, results, and the pause overlay — plus one interstitial ad when a challenge ends and the player returns to a non-gameplay screen. Ads never appear during active target resolution, never gate the start of a challenge, and never fire on ordinary menu navigation.
-- **Access tiers** (matching Modulo Squares): guest/unauthenticated players get no gameplay entry — sign-in is required before the first challenge. Logged-in free players get full gameplay plus leaderboard participation. Paid logged-in players get full gameplay with ads disabled. This is the default; a future guest mode would need its own local-progress and conversion rules defined before it could ship.
-- **Ad removal:** a single one-time in-app purchase disables all ads permanently. This is the only purchase in the MVP.
+- **Free tier:** the complete game, supported by a persistent banner ad (top of screen) on every non-gameplay screen — menu, the intercepted-message board, settings, results, and the pause overlay — plus one interstitial ad when a transmission is decoded or lost and the player returns to a non-gameplay screen. Ads never appear during active target resolution, never gate the start of a puzzle, and never fire on ordinary menu navigation.
+- **Access tiers:** guest/unauthenticated players get no gameplay entry — platform sign-in (Game Center/Play Games Services) is required before the first transmission. Logged-in free players get full gameplay plus their platform's leaderboard participation. Paid logged-in players get full gameplay with ads disabled. This is the default; a future guest mode would need its own local-progress and conversion rules defined before it could ship.
+- **Ad removal:** a single one-time in-app purchase, $2.99 (matching Modulo Squares' price point), disables all ads permanently. This is the only purchase in the MVP.
 - **Never monetized:** operations, undo, accessibility features, or any competitive advantage. No consumable currencies or energy timers.
 - Cosmetic themes or future content packs may be considered post-launch but are not part of the MVP and are never required to enjoy the free ad-supported experience.
 

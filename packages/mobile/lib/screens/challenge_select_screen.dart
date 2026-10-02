@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:game_shell/game_shell.dart';
+import '../shell/shell.dart';
 
 import '../app/app_services.dart';
 import '../content/challenge_repository.dart';
@@ -22,14 +22,19 @@ class ChallengeSelectScreen extends StatelessWidget {
             final challenge = ChallengeRepository.all[index];
             return ListTile(
               title: Text(challenge.title),
-              subtitle: Text('${challenge.chapter} · budget ${challenge.moveBudget}'),
+              subtitle: Text(
+                '${challenge.chapter} · ${challenge.moveBudget} moves'
+                '${challenge.clocked ? '' : ' · no clock'}',
+              ),
               onTap: () {
-                Navigator.of(context).push(MaterialPageRoute(
-                  builder: (_) => GameplayScreen(
-                    services: services,
-                    challenge: challenge,
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => GameplayScreen(
+                      services: services,
+                      challenge: challenge,
+                    ),
                   ),
-                ));
+                );
               },
             );
           },

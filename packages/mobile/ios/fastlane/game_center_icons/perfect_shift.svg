@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024"><rect width="1024" height="1024" fill="#07111F"/><path d="M 440 300 L 560 430 L 440 560" fill="none" stroke="#FFB454" stroke-width="34" stroke-linecap="round" stroke-linejoin="round" opacity="1.0"/><path d="M 530 300 L 560 430 L 530 560" fill="none" stroke="#FFB454" stroke-width="34" stroke-linecap="round" stroke-linejoin="round" opacity="0.55"/><polygon points="512.0,144.0 523.8,173.8 555.7,175.8 531.0,196.2 539.0,227.2 512.0,210.0 485.0,227.2 493.0,196.2 468.3,175.8 500.2,173.8" fill="#70E0BD"/><rect x="127.0" y="860" width="84" height="84" rx="16" fill="#101D30" stroke="#6E83A3" stroke-width="3"/>
+<rect x="225.0" y="860" width="84" height="84" rx="16" fill="#FFB454" />
+<rect x="323.0" y="860" width="84" height="84" rx="16" fill="#101D30" stroke="#6E83A3" stroke-width="3"/>
+<rect x="421.0" y="860" width="84" height="84" rx="16" fill="#FFB454" />
+<rect x="519.0" y="860" width="84" height="84" rx="16" fill="#FFB454" />
+<rect x="617.0" y="860" width="84" height="84" rx="16" fill="#101D30" stroke="#6E83A3" stroke-width="3"/>
+<rect x="715.0" y="860" width="84" height="84" rx="16" fill="#101D30" stroke="#6E83A3" stroke-width="3"/>
+<rect x="813.0" y="860" width="84" height="84" rx="16" fill="#101D30" stroke="#6E83A3" stroke-width="3"/></svg>
