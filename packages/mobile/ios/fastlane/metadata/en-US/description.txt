@@ -1,0 +1,15 @@
+Intercept Echo turns an eight-bit register into a fast, tactile puzzle. Shift, rotate, and transform visible bit patterns to match incoming targets before the clock runs out — no prior knowledge of binary or programming required.
+
+CRACK THE TRANSMISSION
+Work through the Intercept campaign, cracking intercepted messages letter by letter. Each letter is a register puzzle; solve enough of them and the message reveals itself.
+
+SHIFT AND ROTATE
+Learn the register one mechanic at a time: Count (tap cells to set a value), Shift (double and halve, with bits spilling off the ends as a resource), and Rotate (wrap a bit around instead of losing it). Every operation is exact and deterministic — no luck involved.
+
+SCORED, NOT JUST TIMED
+Solve a puzzle in the fewest moves for the best score. Extra moves cost points, so efficient play is rewarded, not just speed.
+
+FREE TO PLAY
+The full game — Practice mode and the Intercept campaign — is free, supported by ads. Remove ads with a one-time purchase.
+
+Intercept Echo is built for puzzle players who like compact rules and real mastery, and for anyone curious what a shift register actually does.

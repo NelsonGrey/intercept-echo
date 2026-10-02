@@ -1,19 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:game_shell/game_shell.dart';
+import 'package:intercept_echo/shell/shell.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intercept_echo/app/app_services.dart';
+import 'package:intercept_echo/gamecenter/fake_game_center_progress_service.dart';
+import 'package:intercept_echo/gamecenter/game_center_connection.dart';
+import 'package:intercept_echo/gamecenter/game_center_progress_service.dart';
 import 'package:intercept_echo/main.dart';
 import 'package:intercept_echo/theme/game_theme.dart';
 
 // Real UMP/AdMob/IAP services need platform plugin channels a widget test
-// doesn't have, so every test here injects the Fake* services (matching
-// game-shell's own testing guidance) rather than booting the real ones.
+// doesn't have, so every test here injects the Fake* services rather than booting the real ones.
 AppServices fakeServices({UrlOpener? openUrl}) => AppServices(
   consent: FakeConsentService(),
   entitlement: FakeEntitlementService(),
   ads: FakeAdService(),
   auth: FakePlatformGameAuthService(),
+  connection: GameCenterConnection.connectedFake(),
+  progress: FakeGameCenterProgressService(),
   openUrl: openUrl ?? (_) async {},
 );
 
@@ -91,6 +95,27 @@ void main() {
 
     expect(find.text('Paused'), findsOneWidget);
     expect(find.byKey(const Key('fake_banner_ad')), findsOneWidget);
+  });
+
+  testWidgets('Settings opens the Game Center leaderboard and achievements', (
+    tester,
+  ) async {
+    final services = fakeServices();
+    await tester.pumpWidget(InterceptEchoApp(services: services));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Settings'));
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(find.text('Leaderboard'), 200);
+    await tester.tap(find.text('Leaderboard'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.text('Achievements'), 200);
+    await tester.tap(find.text('Achievements'));
+    await tester.pumpAndSettle();
+
+    final progress = services.progressBackend as FakeGameCenterProgressService;
+    expect(progress.showLeaderboardCount, 1);
+    expect(progress.showAchievementsCount, 1);
   });
 
   testWidgets('choosing a palette recolors gameplay and persists', (
@@ -214,11 +239,17 @@ void main() {
     });
 
     testWidgets('Shift reaches a number by doubling', (tester) async {
-      await openChallenge(tester, 'Double');
-      // shift-01: 3 -> 6 is one Shift Left.
+      final services = await openChallenge(tester, 'Double');
+      // shift-01: 3 -> 6 is one Shift Left — par, so a perfect score.
       await tester.tap(find.text('Shift Left'));
       await tester.pumpAndSettle();
       expect(find.text('Target Matched'), findsOneWidget);
+      final progress =
+          services.progressBackend as FakeGameCenterProgressService;
+      expect(
+        progress.unlockedAchievements,
+        contains(GameCenterIds.achievementPerfectShift),
+      );
     });
 
     testWidgets('a wrong toggle costs a move and can be undone', (

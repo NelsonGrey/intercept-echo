@@ -1,7 +1,14 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../content/challenge.dart';
+import '../gamecenter/fake_game_center_progress_service.dart';
+import '../gamecenter/game_center_progress_service.dart';
+import '../gamecenter/games_services_progress_service.dart';
 import '../settings/difficulty_setting.dart';
 import 'puzzle_factory.dart';
 import 'transmission.dart';
@@ -44,10 +51,19 @@ class InterceptScoring {
 /// score. The transmission index and total score persist; the state of a
 /// half-decoded message does not (a relaunch restarts that message).
 class InterceptRun extends ChangeNotifier {
-  InterceptRun({List<Transmission>? campaign})
-    : campaign = campaign ?? transmissions;
+  InterceptRun({
+    List<Transmission>? campaign,
+    GameCenterProgressService? progress,
+  }) : campaign = campaign ?? transmissions,
+       _progress = progress ?? _defaultProgress();
+
+  static GameCenterProgressService _defaultProgress() =>
+      (Platform.isIOS || Platform.isMacOS)
+      ? GamesServicesProgressService()
+      : FakeGameCenterProgressService();
 
   final List<Transmission> campaign;
+  final GameCenterProgressService _progress;
 
   static const _indexKey = 'intercept.index';
   static const _scoreKey = 'intercept.score';
@@ -89,7 +105,41 @@ class InterceptRun extends ChangeNotifier {
     final prefs = _prefs = await SharedPreferences.getInstance();
     _index = (prefs.getInt(_indexKey) ?? 0).clamp(0, campaign.length);
     _totalScore = prefs.getInt(_scoreKey) ?? 0;
+    await _reconcileCloudProgress();
     _resetMessage();
+    notifyListeners();
+  }
+
+  /// Merges in Game Center's cloud save (iCloud-backed on iOS): whichever
+  /// of local/cloud is further ahead on each field wins, since both only
+  /// move forward during normal play — safe even if this is a fresh
+  /// install syncing an existing player's progress from another device.
+  /// Best-effort: a missing or unreadable cloud save just keeps local.
+  Future<void> _reconcileCloudProgress() async {
+    final raw = await _progress.loadCloudProgress();
+    if (raw == null) return;
+    try {
+      final decoded = jsonDecode(raw) as Map<String, dynamic>;
+      final cloudIndex = (decoded['index'] as num?)?.toInt() ?? 0;
+      final cloudScore = (decoded['score'] as num?)?.toInt() ?? 0;
+      _index = (_index > cloudIndex ? _index : cloudIndex).clamp(
+        0,
+        campaign.length,
+      );
+      _totalScore = _totalScore > cloudScore ? _totalScore : cloudScore;
+    } catch (_) {
+      // Malformed/foreign save data — ignore, keep local.
+    }
+  }
+
+  /// Called when the player connects to Game Center: merges the cloud save
+  /// (restarting the current message only if that moved the player to a
+  /// different transmission) and pushes the local score and progress up.
+  Future<void> syncWithGameCenter() async {
+    final before = _index;
+    await _reconcileCloudProgress();
+    if (_index != before) _resetMessage();
+    _persist();
     notifyListeners();
   }
 
@@ -123,7 +173,15 @@ class InterceptRun extends ChangeNotifier {
         .floor();
     // Net in one step, so Test costs are paid even from a score of 0.
     _award(scaled - pointsSpent);
-    if (hiddenLetters.isEmpty) _status = TransmissionStatus.decoded;
+    if (hiddenLetters.isEmpty) {
+      _status = TransmissionStatus.decoded;
+      _onTransmissionDecoded();
+    }
+    if (advanced) {
+      unawaited(
+        _progress.unlockAchievement(GameCenterIds.achievementUsedRotate),
+      );
+    }
     _persist();
     notifyListeners();
   }
@@ -150,6 +208,7 @@ class InterceptRun extends ChangeNotifier {
       _award(_guessBonus);
       _revealed.addAll(current.distinctLetters);
       _status = TransmissionStatus.decoded;
+      _onTransmissionDecoded();
       _persist();
     } else {
       _loseBar();
@@ -162,9 +221,26 @@ class InterceptRun extends ChangeNotifier {
   void advance() {
     if (_status != TransmissionStatus.decoded) return;
     _index++;
+    if (campaignComplete) {
+      unawaited(
+        _progress.unlockAchievement(GameCenterIds.achievementCampaignComplete),
+      );
+    }
     _resetMessage();
     _persist();
     notifyListeners();
+  }
+
+  /// The first transmission ever decoded, right or wrong path — checked
+  /// here rather than in [advance] so it fires the moment it happens
+  /// (matches the player's real "I just did it" beat), not one screen
+  /// later.
+  void _onTransmissionDecoded() {
+    if (_index == 0) {
+      unawaited(
+        _progress.unlockAchievement(GameCenterIds.achievementFirstTransmission),
+      );
+    }
   }
 
   /// After a lost transmission: try the same one again from scratch. The
@@ -207,11 +283,19 @@ class InterceptRun extends ChangeNotifier {
 
   /// SharedPreferences updates its in-memory copy synchronously, so a
   /// reload straight after sees these values; the disk write completes in
-  /// the background.
+  /// the background. Also pushes the leaderboard score and cloud save —
+  /// fire-and-forget like every [GameCenterProgressService] call, so a
+  /// slow or failed network round-trip never delays gameplay.
   void _persist() {
     final prefs = _prefs;
     if (prefs == null) return;
     prefs.setInt(_indexKey, _index);
     prefs.setInt(_scoreKey, _totalScore);
+    unawaited(_progress.submitScore(_totalScore));
+    unawaited(
+      _progress.saveCloudProgress(
+        jsonEncode({'index': _index, 'score': _totalScore}),
+      ),
+    );
   }
 }

@@ -1,5 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intercept_echo/gamecenter/fake_game_center_progress_service.dart';
+import 'package:intercept_echo/gamecenter/game_center_progress_service.dart';
 import 'package:intercept_echo/intercept/cipher.dart';
 import 'package:intercept_echo/intercept/intercept_run.dart';
 import 'package:intercept_echo/intercept/puzzle_factory.dart';
@@ -100,7 +104,7 @@ void main() {
     late InterceptRun run;
     setUp(() async {
       SharedPreferences.setMockInitialValues({});
-      run = InterceptRun();
+      run = InterceptRun(progress: FakeGameCenterProgressService());
       await run.load();
     });
 
@@ -184,7 +188,7 @@ void main() {
       expect(run.bars, 4);
       expect(run.revealed, isEmpty);
 
-      final reloaded = InterceptRun();
+      final reloaded = InterceptRun(progress: FakeGameCenterProgressService());
       await reloaded.load();
       expect(reloaded.index, 1);
       expect(reloaded.totalScore, run.totalScore);
@@ -198,6 +202,100 @@ void main() {
       expect(run.index, 0);
       expect(run.bars, 4);
       expect(run.status, TransmissionStatus.playing);
+    });
+  });
+
+  group('Game Center integration', () {
+    const miniCampaign = [
+      Transmission(phrase: 'HI', key: 0, kind: PuzzleKind.count, clocked: false),
+      Transmission(phrase: 'BYE', key: 0, kind: PuzzleKind.count, clocked: false),
+    ];
+
+    late FakeGameCenterProgressService progress;
+    late InterceptRun gcRun;
+
+    setUp(() async {
+      SharedPreferences.setMockInitialValues({});
+      progress = FakeGameCenterProgressService();
+      gcRun = InterceptRun(campaign: miniCampaign, progress: progress);
+      await gcRun.load();
+    });
+
+    test('cracking the first transmission unlocks it', () {
+      for (final l in gcRun.current.distinctLetters) {
+        gcRun.recordCrack(l, spareMoves: 0);
+      }
+      expect(
+        progress.unlockedAchievements,
+        contains(GameCenterIds.achievementFirstTransmission),
+      );
+    });
+
+    test('an advanced (Rotate) crack unlocks the Rotate achievement', () {
+      gcRun.recordCrack('H', spareMoves: 0, advanced: true);
+      expect(
+        progress.unlockedAchievements,
+        contains(GameCenterIds.achievementUsedRotate),
+      );
+    });
+
+    test('finishing the campaign unlocks the campaign-complete achievement', () {
+      for (final l in gcRun.current.distinctLetters) {
+        gcRun.recordCrack(l, spareMoves: 0);
+      }
+      gcRun.advance();
+      for (final l in gcRun.current.distinctLetters) {
+        gcRun.recordCrack(l, spareMoves: 0);
+      }
+      gcRun.advance();
+      expect(gcRun.campaignComplete, isTrue);
+      expect(
+        progress.unlockedAchievements,
+        contains(GameCenterIds.achievementCampaignComplete),
+      );
+    });
+
+    test('every persist submits the score and pushes a cloud save', () {
+      gcRun.recordCrack('H', spareMoves: 0);
+      expect(progress.submittedScores.last, gcRun.totalScore);
+      final saved = jsonDecode(progress.savedCloudProgress.last) as Map;
+      expect(saved['score'], gcRun.totalScore);
+      expect(saved['index'], gcRun.index);
+    });
+
+    test('a cloud save further ahead than local wins on load', () async {
+      SharedPreferences.setMockInitialValues({});
+      final aheadCloud = FakeGameCenterProgressService()
+        ..cloudData = jsonEncode({'index': 1, 'score': 500});
+      final fresh = InterceptRun(campaign: miniCampaign, progress: aheadCloud);
+      await fresh.load();
+      expect(fresh.index, 1);
+      expect(fresh.totalScore, 500);
+    });
+
+    test('local progress ahead of a stale cloud save is kept', () async {
+      SharedPreferences.setMockInitialValues({
+        'intercept.index': 1,
+        'intercept.score': 900,
+      });
+      final staleCloud = FakeGameCenterProgressService()
+        ..cloudData = jsonEncode({'index': 0, 'score': 10});
+      final fresh = InterceptRun(campaign: miniCampaign, progress: staleCloud);
+      await fresh.load();
+      expect(fresh.index, 1);
+      expect(fresh.totalScore, 900);
+    });
+
+    test('no cloud save yet leaves local progress untouched', () async {
+      SharedPreferences.setMockInitialValues({
+        'intercept.index': 1,
+        'intercept.score': 42,
+      });
+      final noCloud = FakeGameCenterProgressService();
+      final fresh = InterceptRun(campaign: miniCampaign, progress: noCloud);
+      await fresh.load();
+      expect(fresh.index, 1);
+      expect(fresh.totalScore, 42);
     });
   });
 }

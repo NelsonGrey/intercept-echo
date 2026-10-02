@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:game_shell/game_shell.dart';
+import '../shell/shell.dart';
 
 import '../app/app_services.dart';
+import '../gamecenter/game_center_connection.dart';
+import '../gamecenter/game_center_progress_service.dart';
 import '../settings/difficulty_setting.dart';
 import '../theme/game_theme.dart';
 
@@ -41,7 +45,15 @@ class SettingsScreen extends StatelessWidget {
               RadioGroup<Difficulty>(
                 groupValue: services.difficulty.value,
                 onChanged: (d) {
-                  if (d != null) services.difficulty.set(d);
+                  if (d == null) return;
+                  services.difficulty.set(d);
+                  if (d == Difficulty.hard) {
+                    unawaited(
+                      services.progress.unlockAchievement(
+                        GameCenterIds.achievementHardDifficulty,
+                      ),
+                    );
+                  }
                 },
                 child: const Column(
                   children: [
@@ -71,6 +83,15 @@ class SettingsScreen extends StatelessWidget {
                   ],
                 ),
               ),
+              const SizedBox(height: 16),
+              if (services.connection.supported) ...[
+                const _SectionHeader('Game Center'),
+                ListenableBuilder(
+                  listenable: services.connection,
+                  builder: (context, _) =>
+                      _GameCenterSection(services: services),
+                ),
+              ],
               const SizedBox(height: 16),
               const _SectionHeader('Purchases'),
               _PurchaseSection(entitlement: services.entitlement),
@@ -215,6 +236,66 @@ class _PurchaseSection extends StatelessWidget {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(const SnackBar(content: Text('Purchases restored.')));
+  }
+}
+
+class _GameCenterSection extends StatelessWidget {
+  const _GameCenterSection({required this.services});
+
+  final AppServices services;
+
+  @override
+  Widget build(BuildContext context) {
+    final connection = services.connection;
+    final connecting = connection.status == GameCenterStatus.connecting;
+    final subtitle = switch (connection.status) {
+      GameCenterStatus.off =>
+        'Post scores, earn achievements and sync progress across devices',
+      GameCenterStatus.connecting => 'Connecting…',
+      GameCenterStatus.connected =>
+        'Connected as ${connection.playerName ?? 'your Game Center player'}',
+      GameCenterStatus.unavailable =>
+        'Couldn\'t reach Game Center. Check that you\'re signed in under '
+            'iOS Settings > Game Center, then try again',
+    };
+    return Column(
+      children: [
+        SwitchListTile(
+          secondary: const Icon(Icons.sports_esports),
+          title: const Text('Connect to Game Center'),
+          subtitle: Text(subtitle),
+          value:
+              connection.isConnected ||
+              connecting ||
+              connection.status == GameCenterStatus.unavailable,
+          onChanged: connecting
+              ? null
+              : (on) => on ? connection.connect() : connection.disconnect(),
+        ),
+        if (connection.status == GameCenterStatus.unavailable)
+          ListTile(
+            leading: const Icon(Icons.refresh),
+            title: const Text('Try again'),
+            onTap: connection.connect,
+          ),
+        ListTile(
+          enabled: connection.isConnected,
+          leading: const Icon(Icons.leaderboard),
+          title: const Text('Leaderboard'),
+          onTap: connection.isConnected
+              ? services.progress.showLeaderboard
+              : null,
+        ),
+        ListTile(
+          enabled: connection.isConnected,
+          leading: const Icon(Icons.emoji_events),
+          title: const Text('Achievements'),
+          onTap: connection.isConnected
+              ? services.progress.showAchievements
+              : null,
+        ),
+      ],
+    );
   }
 }
 

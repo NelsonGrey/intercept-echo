@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:game_shell/game_shell.dart';
+import '../shell/shell.dart';
 
 import '../app/app_services.dart';
 import '../intercept/intercept_run.dart';
@@ -159,6 +159,19 @@ class TransmissionResultScreen extends StatelessWidget {
                               ),
                             ),
                           ),
+                        ListenableBuilder(
+                          listenable: services.connection,
+                          builder: (context, _) =>
+                              services.connection.isConnected
+                              ? TextButton.icon(
+                                  onPressed: services.progress.showLeaderboard,
+                                  icon: const Icon(Icons.leaderboard),
+                                  label: const Text(
+                                    'Score posted to Game Center · Leaderboard',
+                                  ),
+                                )
+                              : const SizedBox.shrink(),
+                        ),
                       ],
                     ),
                   ),

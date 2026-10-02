@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:game_shell/game_shell.dart';
+import '../shell/shell.dart';
 
 import '../app/app_services.dart';
 import '../content/challenge.dart';
@@ -11,6 +11,7 @@ import '../content/clock.dart';
 import '../domain/operation_type.dart';
 import '../domain/register_engine.dart';
 import '../domain/register_state.dart';
+import '../gamecenter/game_center_progress_service.dart';
 import '../intercept/intercept_run.dart';
 import '../intercept/message_view.dart';
 import '../theme/game_theme.dart';
@@ -26,8 +27,7 @@ import 'results_screen.dart';
 /// just as running out of moves does. Unclocked challenges show moves
 /// remaining in the ring instead.
 ///
-/// Ad placement follows the portfolio rule (see game-shell's README "Ad
-/// placement policy"): the banner is hidden while [_isPaused] is false
+/// Ad placement policy: the banner is hidden while [_isPaused] is false
 /// (active target resolution) and shown the instant the player pauses —
 /// same route, dynamically toggled `showBanner`, not two separate screens.
 /// The interstitial is fired once, right before navigating to
@@ -263,6 +263,17 @@ class _GameplayScreenState extends State<GameplayScreen> {
     if (_resolved) return;
     _resolved = true;
     _clock?.cancel();
+    if (won && widget.letter == null) {
+      final movesUsed = widget.challenge.moveBudget - _movesRemaining;
+      if (PracticeScoring.scoreFor(widget.challenge, movesUsed) ==
+          PracticeScoring.perfectScore) {
+        unawaited(
+          widget.services.progress.unlockAchievement(
+            GameCenterIds.achievementPerfectShift,
+          ),
+        );
+      }
+    }
     setState(() => _outcome = _Outcome(won: won, timedOut: timedOut));
   }
 
