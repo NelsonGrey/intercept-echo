@@ -52,10 +52,12 @@ Play Console's Privacy Policy URL, below.
      AdMob app in AdMob → Privacy & messaging — the code already calls
      Google's UMP SDK before ads load, but the form has nothing to show
      until a message is defined there.
-   - **app-ads.txt**: publish `google.com, pub-5198775482699756, DIRECT,
-     f08c47fec0942fa0` at `https://nelsongrey.com/app-ads.txt` (that's the
-     `nelson-grey` site repo, not this one — add it alongside the other
-     three apps' entries).
+   - **app-ads.txt**: lives in the `nelson-grey` site repo as a single file
+     at the domain root (`https://nelsongrey.com/app-ads.txt`), shared by
+     every game. Crawlers only read the root, so games under `/games/` must
+     not add their own; add a line there only for a new publisher ID or ad
+     network. Needs a deploy of that repo, then verify it returns
+     `text/plain` (not the homepage HTML).
    - Android stays on Google's shared test IDs
      (`AdMobConfig`'s android* fields) until an Android AdMob app exists.
 5. App Store Connect → Features → Game Center → app `com.interceptecho.app.ios`
