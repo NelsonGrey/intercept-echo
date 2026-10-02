@@ -9,7 +9,7 @@ const _kPrefsKey = 'game_shell_ad_free';
 
 /// Real [EntitlementService] backed by `in_app_purchase`, generalized from
 /// Modulo Squares' purchase_service.dart. Every game passes its own store
-/// product ID for the ad-removal purchase (e.g. `ad_removal`) — the product
+/// product ID for the ad-removal purchase (e.g. `intercept_echo_remove_ads`) — the product
 /// itself must still be created in Play Console / App Store Connect per
 /// game, this class doesn't do that.
 ///

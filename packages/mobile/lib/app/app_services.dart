@@ -58,7 +58,7 @@ class AppServices {
        consent = consent ?? UmpConsentService(),
        entitlement =
            entitlement ??
-           IapEntitlementService(adRemovalProductId: 'ad_removal'),
+           IapEntitlementService(adRemovalProductId: 'intercept_echo_remove_ads'),
        ads = ads ?? AdMobAdService(_interceptEchoAdMobConfig),
        _injectedIntercept = intercept,
        auth = auth ?? _defaultAuth(),

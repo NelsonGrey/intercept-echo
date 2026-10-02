@@ -38,7 +38,7 @@ Play Console's Privacy Policy URL, below.
 3. App Store Connect → In-App Purchases → **+** → Non-Consumable (matches
    Modulo Squares' ad-removal product)
    - Reference name: Remove Ads
-   - Product ID: `ad_removal` (must match `AppServices`' `adRemovalProductId`
+   - Product ID: `intercept_echo_remove_ads` (must match `AppServices`' `adRemovalProductId`
      in `lib/app/app_services.dart`)
    - Price: Tier 3 ($2.99)
    - Validate on a real device in a TestFlight build: tapping "Remove Ads —
@@ -104,7 +104,7 @@ Play Console's Privacy Policy URL, below.
    project for `com.interceptecho.app.android`, once Android testing
    resumes (see README status).
 3. Play Console → Monetize → Products → In-app products → **+**
-   - Product ID: `ad_removal` (must match the iOS product ID above)
+   - Product ID: `intercept_echo_remove_ads` (must match the iOS product ID above)
    - Price: $2.99
    - Once Android testing resumes: validate the purchase flow the same way
      as iOS, on a real device with a licensed test account.
