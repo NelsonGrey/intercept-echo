@@ -109,6 +109,15 @@ platform :ios do
       UI.user_error!("APP_STORE_CONNECT_KEY could not be converted to a valid .p8 key file")
     end
 
+    # Xcode's CryptoKit parser rejects PEM whose header/body/footer were
+    # flattened onto one line or whose body isn't wrapped at 64 columns,
+    # so rebuild a canonical document from just the base64 payload.
+    pem_match = private_key_content.match(/-----BEGIN ([A-Z ]*PRIVATE KEY)-----(.*?)-----END \1-----/m)
+    if pem_match
+      body = pem_match[2].gsub(/\s+/, "")
+      private_key_content = "-----BEGIN #{pem_match[1]}-----\n#{body.scan(/.{1,64}/).join("\n")}\n-----END #{pem_match[1]}-----\n"
+    end
+
     require 'tempfile'
     key_file = Tempfile.new(['app_store_connect_xcode_auth', '.p8'])
     key_file.write(private_key_content)
@@ -221,10 +230,9 @@ platform :ios do
       ipa: ipa_path,
       skip_waiting_for_build_processing: true,
       beta_app_feedback_email: required_env("BETA_FEEDBACK_EMAIL"),
-      # Required once per app before Apple allows distributing to an
-      # EXTERNAL testing group (distribute_external: true below) — the
-      # build otherwise uploads fine and only the final distribute step
-      # rejects with "Beta App Description is missing".
+      # Upload only: internal testers get the build without review. External
+      # distribution (distribute_external/groups) additionally needs Test
+      # Information saved in App Store Connect and Beta App Review.
       beta_app_description: "Intercept Echo turns an eight-bit register into a fast, tactile " \
         "puzzle: shift, rotate, and transform bit patterns to crack intercepted " \
         "transmissions before the clock runs out.",
@@ -235,9 +243,7 @@ platform :ios do
         contact_phone: required_env("BETA_CONTACT_PHONE"),
         notes: "No account required — sign-in via Game Center is optional and never blocks play."
       },
-      changelog: "Automated TestFlight build from CI/CD pipeline",
-      distribute_external: true,
-      groups: [ENV["BETA_GROUP_NAME"] || "Internal Testers"]
+      changelog: "Automated TestFlight build from CI/CD pipeline"
     )
   end
 
