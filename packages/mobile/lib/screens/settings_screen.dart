@@ -231,11 +231,39 @@ class _PurchaseSection extends StatelessWidget {
   }
 
   Future<void> _restore(BuildContext context) async {
-    await entitlement.restore();
+    String message;
+    try {
+      message = await _restoreAndConfirm()
+          ? 'Purchase restored. Ads are removed.'
+          : 'No previous purchase found for this Apple Account.';
+    } catch (_) {
+      message = 'Could not reach the App Store. Please try again.';
+    }
     if (!context.mounted) return;
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(const SnackBar(content: Text('Purchases restored.')));
+    ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  /// The store reports restored purchases asynchronously on its purchase
+  /// stream, after [EntitlementService.restore] has already returned, so
+  /// wait briefly for the entitlement to arrive before saying anything.
+  Future<bool> _restoreAndConfirm() async {
+    final granted = Completer<bool>();
+    final sub = entitlement.adFreeChanges.listen((adFree) {
+      if (adFree && !granted.isCompleted) granted.complete(true);
+    });
+    final timeout = Timer(const Duration(seconds: 6), () {
+      if (!granted.isCompleted) granted.complete(false);
+    });
+    try {
+      await entitlement.restore();
+      if (entitlement.isAdFree) return true;
+      return await granted.future;
+    } finally {
+      timeout.cancel();
+      unawaited(sub.cancel());
+    }
   }
 }
 
