@@ -286,6 +286,56 @@ void main() {
       expect(prefs.getBool('accessibility.relaxedClock'), isTrue);
     });
 
+    testWidgets('Restore Purchases says so when a purchase is restored', (
+      tester,
+    ) async {
+      final services = AppServices(
+        consent: FakeConsentService(),
+        entitlement: FakeEntitlementService(hasPreviousPurchase: true),
+        ads: FakeAdService(),
+        auth: FakePlatformGameAuthService(),
+        connection: GameCenterConnection.connectedFake(),
+        progress: FakeGameCenterProgressService(),
+        openUrl: (_) async {},
+      );
+      await tester.pumpWidget(InterceptEchoApp(services: services));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Settings'));
+      await tester.pumpAndSettle();
+
+      final restore = find.text('Restore Purchases');
+      await tester.scrollUntilVisible(restore, 100);
+      await tester.pumpAndSettle();
+      await tester.tap(restore);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(find.text('Purchase restored. Ads are removed.'), findsOneWidget);
+    });
+
+    testWidgets('Restore Purchases says so when there is nothing to restore', (
+      tester,
+    ) async {
+      final services = fakeServices();
+      await tester.pumpWidget(InterceptEchoApp(services: services));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Settings'));
+      await tester.pumpAndSettle();
+
+      final restore = find.text('Restore Purchases');
+      await tester.scrollUntilVisible(restore, 100);
+      await tester.pumpAndSettle();
+      await tester.tap(restore);
+      await tester.pump(const Duration(seconds: 7));
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(
+        find.text('No previous purchase found for this Apple Account.'),
+        findsOneWidget,
+      );
+      expect(services.entitlement.isAdFree, isFalse);
+    });
+
     testWidgets('Remove Ads purchases the ad-free entitlement', (tester) async {
       final services = fakeServices();
       await tester.pumpWidget(InterceptEchoApp(services: services));
