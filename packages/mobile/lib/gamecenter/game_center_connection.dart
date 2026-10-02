@@ -37,6 +37,13 @@ class GameCenterConnection extends ChangeNotifier {
       _enabled = true,
       _isFake = true;
 
+  /// Test/capture stand-in for platforms where Game Center is unavailable.
+  GameCenterConnection.unsupportedFake([PlatformGameAuthService? auth])
+    : _auth = auth ?? FakePlatformGameAuthService(),
+      supported = false,
+      _prompted = true,
+      _isFake = true;
+
   static const _enabledKey = 'gamecenter.enabled';
   static const _promptedKey = 'gamecenter.prompted';
 

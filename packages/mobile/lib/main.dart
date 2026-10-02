@@ -45,6 +45,7 @@ class _InterceptEchoAppState extends State<InterceptEchoApp> {
       valueListenable: _services.theme,
       builder: (context, id, _) => MaterialApp(
         title: 'Intercept Echo',
+        debugShowCheckedModeBanner: false,
         theme: materialThemeFor(gameThemePalettes[id]!),
         home: FutureBuilder<void>(
           future: _ready,
