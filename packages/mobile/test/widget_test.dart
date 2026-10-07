@@ -107,9 +107,13 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.scrollUntilVisible(find.text('Leaderboard'), 200);
+    await tester.ensureVisible(find.text('Leaderboard'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Leaderboard'));
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(find.text('Achievements'), 200);
+    await tester.ensureVisible(find.text('Achievements'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Achievements'));
     await tester.pumpAndSettle();
 
