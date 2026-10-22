@@ -43,7 +43,7 @@ dependencies:
   shared_preferences: ^2.5.6
 
   # Opens the Privacy/Terms/Support pages from Settings (lib/screens/settings_screen.dart).
-  url_launcher: ^6.3.2
+  url_launcher: ^6.3.3
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
