@@ -79,7 +79,9 @@ class IapEntitlementService implements EntitlementService {
   @override
   Future<void> purchaseAdRemoval() async {
     final available = await _iap.isAvailable();
-    if (!available) return;
+    if (!available) {
+      throw StateError('The App Store is not available.');
+    }
 
     final response = await _iap.queryProductDetails({_productId});
     if (response.notFoundIDs.contains(_productId) ||

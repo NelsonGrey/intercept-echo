@@ -32,22 +32,22 @@ dependencies:
     sdk: flutter
 
   # Ads, consent, the ad-removal purchase and Game Center sign-in (lib/shell/).
-  google_mobile_ads: ^9.0.0
-  in_app_purchase: ^3.3.0
+  google_mobile_ads: ^9.1.0
+  in_app_purchase: ^3.3.1
 
   # Sign-in, leaderboard, achievement and cloud-save calls (lib/shell/auth/,
   # lib/gamecenter/).
   games_services: ^5.3.0
 
   # Persists the chosen gameplay palette (lib/theme/theme_controller.dart).
-  shared_preferences: ^2.5.5
+  shared_preferences: ^2.5.6
 
   # Opens the Privacy/Terms/Support pages from Settings (lib/screens/settings_screen.dart).
-  url_launcher: ^6.3.2
+  url_launcher: ^6.3.3
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.8
+  cupertino_icons: ^2.0.0
 
 dev_dependencies:
   flutter_test:
