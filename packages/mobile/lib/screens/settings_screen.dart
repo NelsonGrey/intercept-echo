@@ -219,10 +219,14 @@ class _PurchaseSection extends StatelessWidget {
       await entitlement.purchaseAdRemoval();
       // The store's own payment sheet handles the flow from here; a
       // completed purchase arrives through adFreeChanges above.
-    } catch (e) {
+    } catch (_) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+        const SnackBar(
+          content: Text(
+            'Remove Ads isn\'t available right now. Please try again later.',
+          ),
+        ),
       );
     }
   }
