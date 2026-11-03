@@ -5,7 +5,7 @@ import '../shell/shell.dart';
 
 import '../app/app_services.dart';
 import '../gamecenter/game_center_connection.dart';
-import '../gamecenter/game_center_progress_service.dart';
+import '../gamecenter/game_center_ids.dart';
 import '../settings/difficulty_setting.dart';
 import '../theme/game_theme.dart';
 import 'ad_top_scaffold.dart';

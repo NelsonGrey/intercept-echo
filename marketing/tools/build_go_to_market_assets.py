@@ -12,9 +12,9 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 
 ROOT = Path(__file__).resolve().parents[2]
-CAPTURES = ROOT / "packages/mobile/output/gameplay-capture-2026-09-30/curated-screenshots"
+CAPTURES = ROOT / "marketing/assets/store/app-store/raw"
 SITE_ASSETS = Path("/Users/marknelson/Circus/Repositories/nelson-grey/games/intercept-echo/assets")
-OUTPUT = ROOT / "packages/mobile/output/go-to-market-2026-10-02"
+OUTPUT = ROOT / "marketing/assets"
 STORE = ROOT / "packages/mobile/ios/fastlane/screenshots/en-US"
 
 NAVY = "#071322"
@@ -188,7 +188,7 @@ def build_store_screens() -> list[Path]:
         draw_tracking(draw, (87, 2535), "INTERCEPT ECHO", font(30, bold=True), CREAM, 9)
         draw.text((1153, 2531), "iOS", font=font(27, bold=True), fill=AMBER, anchor="ra")
         fastlane_path = STORE / filename
-        package_path = OUTPUT / "app-store" / "6.5-inch-1242x2688" / filename
+        package_path = OUTPUT / "store" / "app-store" / "6.5-inch-1242x2688" / filename
         save_rgb(canvas, fastlane_path)
         save_rgb(canvas, package_path)
         built.extend((fastlane_path, package_path))
@@ -293,7 +293,7 @@ def build_headers() -> list[Path]:
     ]
     built: list[Path] = []
     for relative, size, safe in specs:
-        path = OUTPUT / "social" / "headers" / relative
+        path = OUTPUT / "headers" / relative
         save_rgb(banner(size, "Every bit is a clue.", "Count. Shift. Rotate. Crack the transmission.", safe_width=safe), path)
         built.append(path)
     return built
@@ -304,7 +304,7 @@ def build_profile_assets() -> list[Path]:
     mark = Image.open(SITE_ASSETS / "mark.png").convert("RGBA")
     built: list[Path] = []
     for filename, source in [("intercept-echo-profile-icon-1024.png", icon), ("intercept-echo-mark-transparent-1024.png", mark)]:
-        path = OUTPUT / "social" / "profile" / filename
+        path = OUTPUT / "identity" / filename
         resized = source.resize((1024, 1024), Image.Resampling.LANCZOS)
         path.parent.mkdir(parents=True, exist_ok=True)
         resized.save(path, "PNG", optimize=True)
@@ -341,23 +341,14 @@ def build_iap_promotional_image() -> list[Path]:
     draw_tracking(draw, (512, 846), "CLEAR SIGNAL", font(28, bold=True), AMBER, 9, anchor="ma")
     draw.text((512, 914), "ONE-TIME UPGRADE", font=font(24, bold=True), fill=BLUE, anchor="ma")
 
-    path = OUTPUT / "app-store" / "in-app-purchase" / "remove-ads-1024x1024.png"
+    path = OUTPUT / "store" / "app-store" / "in-app-purchase" / "remove-ads-1024x1024.png"
     path.parent.mkdir(parents=True, exist_ok=True)
     canvas.convert("RGB").save(path, "PNG", optimize=True, dpi=(72, 72))
     return [path]
 
 
-def build_raw_store_sources() -> list[Path]:
-    built: list[Path] = []
-    for source in sorted(CAPTURES.glob("*.png")):
-        path = OUTPUT / "app-store" / "raw-native-iphone" / source.name
-        save_rgb(Image.open(source), path)
-        built.append(path)
-    return built
-
-
 def write_manifest(paths: list[Path]) -> None:
-    manifest = OUTPUT / "ASSET_MANIFEST.csv"
+    manifest = ROOT / "marketing" / "ASSET_MANIFEST.csv"
     manifest.parent.mkdir(parents=True, exist_ok=True)
     with manifest.open("w", newline="", encoding="utf-8") as handle:
         writer = csv.writer(handle)
@@ -375,7 +366,6 @@ def write_manifest(paths: list[Path]) -> None:
 def main() -> None:
     paths: list[Path] = []
     paths.extend(build_store_screens())
-    paths.extend(build_raw_store_sources())
     paths.extend(build_social_campaigns())
     paths.extend(build_headers())
     paths.extend(build_profile_assets())
@@ -386,7 +376,7 @@ def main() -> None:
     write_manifest(paths)
     print(f"Built {len(paths)} PNG assets")
     print(f"Store screenshots: {STORE}")
-    print(f"Launch and social package: {OUTPUT}")
+    print(f"Marketing assets: {OUTPUT}")
 
 
 if __name__ == "__main__":

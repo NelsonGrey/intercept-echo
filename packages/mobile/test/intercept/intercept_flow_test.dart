@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intercept_echo/app/app_services.dart';
 import 'package:intercept_echo/gamecenter/fake_game_center_progress_service.dart';
 import 'package:intercept_echo/gamecenter/game_center_connection.dart';
-import 'package:intercept_echo/gamecenter/game_center_progress_service.dart';
+import 'package:intercept_echo/gamecenter/game_center_ids.dart';
 import 'package:intercept_echo/main.dart';
 
 AppServices fakeServices() => AppServices(
