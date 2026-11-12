@@ -64,7 +64,7 @@ Bundle/package ID base: `com.interceptecho`
 | Deliverable | Platform | Identifier | Status |
 | --- | --- | --- | --- |
 | Android app | Google Play | `com.interceptecho.app.android` | Kept buildable; no tester group yet, Play Console listing not yet created (see [docs/STORE_SETUP.md](docs/STORE_SETUP.md)) |
-| iOS app | Apple App Store Connect | `com.interceptecho.app.ios` | Bundle ID accepted in App Store Connect; app record not yet created (see [docs/STORE_SETUP.md](docs/STORE_SETUP.md)) |
+| iOS app | Apple App Store Connect | `com.interceptecho.app.ios` | Live on the [App Store](https://apps.apple.com/us/app/intercept-echo/id6816505842) (1.0, released 2026-11-12; setup notes in [docs/STORE_SETUP.md](docs/STORE_SETUP.md)) |
 
 ## Store setup still required manually
 
