@@ -7,7 +7,7 @@ import 'package:intercept_echo/shell/shell.dart';
 import 'package:intercept_echo/gamecenter/connection_gated_progress_service.dart';
 import 'package:intercept_echo/gamecenter/fake_game_center_progress_service.dart';
 import 'package:intercept_echo/gamecenter/game_center_connection.dart';
-import 'package:intercept_echo/gamecenter/game_center_progress_service.dart';
+import 'package:intercept_echo/gamecenter/game_center_ids.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class _FailingAuth extends FakePlatformGameAuthService {

@@ -47,8 +47,8 @@ def bg():
 def footer():
     return "</svg>"
 
-def write(name, body):
-    path = os.path.join(os.path.dirname(__file__), f"{name}.svg")
+def write(name, body, filename=None):
+    path = os.path.join(os.path.dirname(__file__), filename or f"intercept_echo_{name}.svg")
     with open(path, "w") as f:
         f.write(svg_header() + bg() + body + footer())
     print("wrote", path)
@@ -139,5 +139,37 @@ for i in range(10):
 star = f'<polygon points="{" ".join(pts)}" fill="{MINT}"/>'
 perfect_shift = chevrons + star + bit_row("01011000", AMBER)
 write("perfect_shift", perfect_shift)
+
+
+def podium(base, top, star_color, y_bottom=880):
+    """Leaderboard podium: three columns of stacked cells (2nd, 1st, 3rd)
+    with a star above the winner. Wording-free so it needs no localising."""
+    cell, gap, col_gap = 150, 18, 36
+    heights = [3, 4, 2]
+    total_w = 3 * cell + 2 * col_gap
+    start_x = (SIZE - total_w) / 2
+    parts = []
+    for c, h in enumerate(heights):
+        x = start_x + c * (cell + col_gap)
+        for r in range(h):
+            y = y_bottom - cell - r * (cell + gap)
+            color = top if (r == h - 1 and h == 4) else base
+            parts.append(
+                f'<rect x="{x:.1f}" y="{y}" width="{cell}" height="{cell}" rx="22" fill="{color}"/>'
+            )
+    import math
+    cx = SIZE / 2
+    cy = y_bottom - 4 * cell - 3 * gap - 100
+    pts = []
+    for i in range(10):
+        ang = math.radians(-90 + i * 36)
+        rad = 70 if i % 2 == 0 else 30
+        pts.append(f"{cx + rad * math.cos(ang):.1f},{cy + rad * math.sin(ang):.1f}")
+    parts.append(f'<polygon points="{" ".join(pts)}" fill="{star_color}"/>')
+    return "".join(parts)
+
+
+# Leaderboard icon (App Store Connect leaderboard image).
+write("leaderboard", podium(BLUE, AMBER, AMBER), filename="leaderboard-1024.svg")
 
 print("done")

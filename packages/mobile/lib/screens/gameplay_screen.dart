@@ -11,7 +11,7 @@ import '../content/clock.dart';
 import '../domain/operation_type.dart';
 import '../domain/register_engine.dart';
 import '../domain/register_state.dart';
-import '../gamecenter/game_center_progress_service.dart';
+import '../gamecenter/game_center_ids.dart';
 import '../intercept/intercept_run.dart';
 import '../intercept/message_view.dart';
 import '../theme/game_theme.dart';

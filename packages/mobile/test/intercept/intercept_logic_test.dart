@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intercept_echo/gamecenter/fake_game_center_progress_service.dart';
-import 'package:intercept_echo/gamecenter/game_center_progress_service.dart';
+import 'package:intercept_echo/gamecenter/game_center_ids.dart';
 import 'package:intercept_echo/intercept/cipher.dart';
 import 'package:intercept_echo/intercept/intercept_run.dart';
 import 'package:intercept_echo/intercept/puzzle_factory.dart';

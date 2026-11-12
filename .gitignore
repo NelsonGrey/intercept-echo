@@ -40,3 +40,6 @@ service-account*.json
 *-service-account*.json
 id_rsa*
 *_log.txt
+
+# Local promotional content
+/promotional/
